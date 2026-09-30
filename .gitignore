@@ -3,3 +3,11 @@ build*/
 *.o
 __pycache__/
 .pytest_cache/
+
+# local env / virtualenvs / build artifacts
+.env
+.venv/
+build/
+dist/
+*.egg-info/
+.DS_Store
