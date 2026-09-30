@@ -50,6 +50,7 @@ jobs:
           python tests/identity_binding.py
           python tests/atspi_strict_resolver.py
           python tests/secure_screenshot_storage.py
+          python tests/test_focus_race.py
       - name: Validate release metadata
         run: |
           python - <<'PY'

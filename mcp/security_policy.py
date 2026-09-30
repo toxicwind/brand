@@ -608,12 +608,12 @@ def _dispatch_native_approval(action: str, challenge_id: str, ttl_ms: int | None
     if provider == "lua":
         commands = [
             [binary, "dispatch", f"hl.plugin.{namespace}.approval({_lua_quote(payload)})"]
-            for namespace in ("brand", "hypr_agent_protal")
+            for namespace in ("brand", "hypr_agent_portal", "hypr_agent_protal")
         ]
     else:
         commands = [
             [binary, "dispatch", dispatcher, payload]
-            for dispatcher in ("brand:approval", "brand:approval")
+            for dispatcher in ("brand:approval", "hypr-agent-portal:approval", "hypr-agent-protal:approval")
         ]
 
     for index, command in enumerate(commands):
@@ -636,9 +636,10 @@ def _dispatch_native_approval(action: str, challenge_id: str, ttl_ms: int | None
             return True
         # Lua reports a missing plugin namespace/function as an evaluation
         # error rather than "Invalid dispatcher".  Only that unknown response
-        # falls back to the one-release compatibility namespace; structured
-        # approval errors are authoritative and must not be retried elsewhere.
-        if provider == "lua" and index == 0 and not output.startswith("approval-"):
+        # falls back to the next compatibility namespace in the chain;
+        # structured approval errors are authoritative and must not be retried
+        # elsewhere.
+        if provider == "lua" and index + 1 < len(commands) and not output.startswith("approval-"):
             continue
         raise RuntimeError(f"native physical approval {action} failed: {output or 'no response'}")
     raise RuntimeError(f"physical approval dispatcher is unavailable: {last_output or 'no response'}")

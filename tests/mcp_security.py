@@ -784,7 +784,7 @@ def test_native_approval_dispatch_supports_lua_and_compat_namespace() -> None:
         assert command[:2] == ["/usr/bin/hyprctl", "dispatch"]
         if '.approval("arm ' in expression or '.approval("cancel ' in expression:
             return mod.subprocess.CompletedProcess(command, 0, "ok\n", "")
-        if "brand.approval" in expression:
+        if "brand.approval" in expression or "hypr_agent_portal.approval" in expression:
             return mod.subprocess.CompletedProcess(command, 1, "lua plugin function unavailable\n", "")
         assert "hypr_agent_protal.approval" in expression
         return mod.subprocess.CompletedProcess(command, 1, "approval-pending-press-f12\n", "")
@@ -805,6 +805,7 @@ def test_native_approval_dispatch_supports_lua_and_compat_namespace() -> None:
     assert dispatches == [
         ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.brand.approval("arm {challenge} 5000")'],
         ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.brand.approval("status {challenge}")'],
+        ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.hypr_agent_portal.approval("status {challenge}")'],
         ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.hypr_agent_protal.approval("status {challenge}")'],
         ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.brand.approval("cancel {challenge}")'],
     ]
@@ -834,7 +835,7 @@ def test_native_approval_dispatch_keeps_legacy_provider_argv_safe() -> None:
         mod.subprocess.run = original_run
     assert calls[-2:] == [
         ["/usr/bin/hyprctl", "dispatch", "brand:approval", f"cancel {challenge}"],
-        ["/usr/bin/hyprctl", "dispatch", "brand:approval", f"cancel {challenge}"],
+        ["/usr/bin/hyprctl", "dispatch", "hypr-agent-portal:approval", f"cancel {challenge}"],
     ]
 
 def test_policy_clipboard_capabilities_are_independent() -> None:

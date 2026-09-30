@@ -15,7 +15,7 @@ from typing import Mapping, MutableMapping
 
 
 CURRENT_NAME = "brand"
-LEGACY_NAME = "brand"
+LEGACY_NAME = "hypr-agent-portal"
 CURRENT_ENV_PREFIX = "BRAND_"
 LEGACY_ENV_PREFIX = "HYPR_AGENT_PROTAL_"
 

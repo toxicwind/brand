@@ -520,7 +520,7 @@ class HyprManagementTests(unittest.TestCase):
             [("hyprctl", "dispatch", 'hl.plugin.brand.manage("focus,address:0xabc@pid=101@start=1001")')],
         )
         self.assertEqual(
-            portalctl.lua_plugin_dispatcher("brand:manage", "workspace_activate,name:dev"),
+            portalctl.lua_plugin_dispatcher("hypr-agent-protal:manage", "workspace_activate,name:dev"),
             'hl.plugin.hypr_agent_protal.manage("workspace_activate,name:dev")',
         )
 
