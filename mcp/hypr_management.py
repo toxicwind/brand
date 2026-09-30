@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -171,6 +172,27 @@ class StateClient(Protocol):
 
 
 Runner = Callable[[Sequence[str]], Any]
+
+
+def _env_enabled(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _brand_focus_race_module() -> Any:
+    """Import mcp/brand_focus_race.py lazily (it imports this module).
+
+    Ensures this module's own directory is importable first, mirroring
+    mcp/brand-mcp.py's MCP_MODULE_DIR sys.path handling, so direct test runs
+    (``python3 tests/...``) work with no extra path setup.
+    """
+    import sys
+
+    module_dir = str(Path(__file__).resolve().parent)
+    if module_dir not in sys.path:
+        sys.path.insert(0, module_dir)
+    import brand_focus_race
+
+    return brand_focus_race
 
 
 def normalize_address(address: str) -> str:
@@ -350,6 +372,11 @@ class HyprManagement:
     """Generate, execute, and verify targeted Hyprland management actions."""
 
     def __init__(self, runner: Runner = subprocess_runner, state: StateClient | None = None) -> None:
+        if runner is subprocess_runner and state is None and _env_enabled("BRAND_MOCK_COMPOSITOR"):
+            # Test seam: drive management against the mock compositor instead
+            # of a real one.  Lazy import: brand_focus_race imports this module.
+            mock = _brand_focus_race_module().load_mock_compositor().from_env()
+            runner, state = mock.runner, mock.state_client()
         self.runner = runner
         self.state = state or HyprctlStateClient(runner)
         self._minimized_from: dict[WindowIdentity, str] = {}
@@ -418,16 +445,46 @@ class HyprManagement:
         return ("hyprctl", "dispatch", "brand:manage", payload)
 
     def focus(self, address: str) -> ManagementResult:
+        # Lazy import: brand_focus_race imports this module at top level.
+        race = _brand_focus_race_module()
+
         target = normalize_address(address)
         before = self._window(target)
         active = self.state.active_window()
         if active and address_matches(active.get("address", ""), target):
             return ManagementResult("focus", target, (), before, before, False, True)
-        command = self._manage_command("focus", before)
-        return self._execute_window(
-            "focus", target, (command,), before,
-            lambda after: after is not None and address_matches(self.state.active_window().get("address", ""), target),
-        )
+        identity = window_identity(before)
+        current = self._window(target, required=False)
+        if not identity_matches(current, identity):
+            raise StaleTarget(
+                f"focus refused stale target {target}: expected {identity!r}, observed {current!r}"
+            )
+        try:
+            qualified: str | None = qualified_window_target(before)
+        except HyprManagementError:
+            qualified = None  # plugin path skips; wlrctl/legacy still race
+        try:
+            winner, command = race.focus_window_race(
+                target, runner=self.runner, state=self.state, qualified=qualified
+            )
+        except race.FocusRaceError as error:
+            raise VerificationFailed(f"focus failed for {target}: {error}") from error
+        if winner == race.DRY_RUN_WINNER or not command:
+            return ManagementResult("focus", target, (), before, before, False, False)
+        after = self._window(target, required=False)
+        if not identity_matches(after, identity):
+            raise StaleTarget(
+                f"focus target identity changed for {target}: expected {identity!r}, observed {after!r}"
+            )
+        active_after = self.state.active_window()
+        if not (
+            isinstance(active_after, Mapping)
+            and address_matches(active_after.get("address", ""), target)
+        ):
+            raise VerificationFailed(
+                f"focus verification failed for {target}: observed {active_after!r}"
+            )
+        return ManagementResult("focus", target, (command,), before, after, True, True)
 
     def close(self, address: str) -> ManagementResult:
         target = normalize_address(address)

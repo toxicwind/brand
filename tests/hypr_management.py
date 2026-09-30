@@ -79,6 +79,10 @@ class FakeCompositor:
     def __call__(self, argv):
         command = tuple(argv)
         self.commands.append(command)
+        if command[:3] == ("hyprctl", "plugin", "list"):
+            return hypr_management.CommandResult(
+                stdout="Plugin libbrand.so:\n  by toxicwind\n  version: 0.4.0"
+            )
         if command[:2] == ("hyprctl", "--batch"):
             script = command[2]
             target = script.split("focuswindow ", 1)[1].split(" ;", 1)[0]

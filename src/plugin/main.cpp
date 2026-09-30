@@ -2823,8 +2823,16 @@ SDispatchResult dispatchManage(const std::string& args) {
     if (action == "focus" || action == "close" || action == "floating" || action == "tiled" || action == "pin" || action == "unpin") {
         if (const auto error = requireCount(2); error)
             return *error;
-        if (action == "focus")
-            return runForWindow("focuswindow", "");
+        if (action == "focus") {
+            auto focused = runForWindow("focuswindow", "");
+            if (!focused.success)
+                return focused;
+            // Native verification (prototype, lane/hyper-race): the focus
+            // action must actually move focus, not just dispatch cleanly.
+            if (!window->m_isMapped || Desktop::focusState()->window() != window)
+                return {.success = false, .error = "qualified management target did not take focus"};
+            return focused;
+        }
         if (action == "close")
             return runForWindow("closewindow", "");
         if (action == "floating")
