@@ -27,7 +27,6 @@ jobs:
         run: |
           python -m py_compile \
             scripts/brandctl \
-            scripts/brandctl \
             scripts/brand-sandbox \
             scripts/install-codex-cursor-asset \
             mcp/*.py \
@@ -35,7 +34,6 @@ jobs:
       - name: Run Python tests
         run: |
           python tests/cursor_render.py
-          python tests/mcp_smoke.py mcp/brand-mcp.py
           python tests/mcp_smoke.py mcp/brand-mcp.py
           python tests/mcp_geometry.py
           python tests/keyboard_routing.py
