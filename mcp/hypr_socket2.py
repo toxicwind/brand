@@ -5,7 +5,7 @@ wait on the compositor event stream and only invoke a caller supplied polling
 fallback when one was explicitly provided.  Results disclose which endpoint
 source produced them plus a path digest, never the absolute socket path.
 
-An explicit ``socket_path`` (or ``HYPR_AGENT_PORTAL_SOCKET2_PATH``) is useful
+An explicit ``socket_path`` (or ``BRAND_SOCKET2_PATH``) is useful
 for tests and for the short Unix-socket paths used by the isolated runner.
 Normal sessions are resolved from ``XDG_RUNTIME_DIR`` and
 ``HYPRLAND_INSTANCE_SIGNATURE``.
@@ -26,7 +26,7 @@ import time
 from typing import Any
 
 
-SOCKET_PATH_ENV = "HYPR_AGENT_PORTAL_SOCKET2_PATH"
+SOCKET_PATH_ENV = "BRAND_SOCKET2_PATH"
 _SOCKET_NAME = ".socket2.sock"
 _READ_SIZE = 64 * 1024
 _MAX_EVENT_LINE_BYTES = 1024 * 1024

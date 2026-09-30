@@ -10,7 +10,7 @@ MODULE = ROOT / "mcp" / "image_pipeline.py"
 
 
 def load_pipeline():
-    spec = importlib.util.spec_from_file_location("hypr_agent_portal_image_pipeline", MODULE)
+    spec = importlib.util.spec_from_file_location("brand_image_pipeline", MODULE)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)

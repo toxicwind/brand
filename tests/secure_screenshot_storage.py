@@ -28,7 +28,7 @@ def screenshot_args() -> argparse.Namespace:
     return argparse.Namespace(
         output_dir=None,
         target="",
-        dispatcher="hypr-agent-portal:screenshot",
+        dispatcher="brand:screenshot",
         no_cursor=True,
         cursor_source="none",
         model_resolution="full",
@@ -64,8 +64,8 @@ def native_fixture(ctl, root: pathlib.Path, session_path: pathlib.Path, *, valid
 
 
 def main() -> int:
-    ctl = load("secure_storage_ctl", ROOT / "scripts" / "hypr-agent-portalctl")
-    mcp = load("secure_storage_mcp", ROOT / "mcp" / "hypr-agent-portal-mcp.py")
+    ctl = load("secure_storage_ctl", ROOT / "scripts" / "brandctl")
+    mcp = load("secure_storage_mcp", ROOT / "mcp" / "brand-mcp.py")
     native_source = (ROOT / "src" / "plugin" / "screenshot_capture.cpp").read_text()
     for marker in ("O_EXCL", "O_NOFOLLOW", "openPrivateArtifactParent", "mkdirat", "ArtifactCleanup"):
         assert marker in native_source

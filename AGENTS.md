@@ -1,6 +1,6 @@
-# hypr-agent-portal Agent Notes
+# brand Agent Notes
 
-When a task says to use `hypr-agent-portal`, use the `hypr-agent-portal` MCP tools, not Browser MCP, shell GUI automation, or the obsolete `hyprcum` namespace.
+When a task says to use `brand`, use the `brand` MCP tools, not Browser MCP, shell GUI automation, or the obsolete `hyprcum` namespace.
 
 For browser/app-control tasks:
 
@@ -20,4 +20,4 @@ For browser/app-control tasks:
 12. Do not invent app-specific shortcuts or search-result heuristics; refresh `get_app_state` and act on visible elements or screenshot/window-relative coordinates.
 13. Honor structured security denials and dry-run results. Do not retry through a lower-level alias to bypass policy. For `confirmation_required`, request a token only for the exact proposed call and then use it once without changing the arguments. `panic` with `panic` or `cancel` remains available as the emergency stop path, including in read-only mode.
 
-Do not switch to Browser MCP just because the target app is a browser; `hypr-agent-portal` controls Chromium through Hyprland background screenshots, AT-SPI app state, and background input.
+Do not switch to Browser MCP just because the target app is a browser; `brand` controls Chromium through Hyprland background screenshots, AT-SPI app state, and background input.

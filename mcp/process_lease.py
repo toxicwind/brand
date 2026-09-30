@@ -32,7 +32,7 @@ from collections.abc import Mapping
 from typing import Any
 
 
-_APPLICATION_DIR = "hypr-agent-portal"
+_APPLICATION_DIR = "brand"
 _DEFAULT_FILENAME = "mutation.lock"
 _MAX_METADATA_BYTES = 8192
 

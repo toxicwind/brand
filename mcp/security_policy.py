@@ -1,4 +1,4 @@
-"""Security policy primitives for hypr-agent-portal's MCP server.
+"""Security policy primitives for brand's MCP server.
 
 The module deliberately has no dependency on the monolithic MCP server.  Callers
 describe an action and its target, then honor :class:`PolicyDecision.execute`
@@ -346,7 +346,7 @@ def default_confirmation_directory(env: Mapping[str, str] | None = None) -> path
     runtime = values.get("XDG_RUNTIME_DIR", "").strip()
     if not runtime:
         raise RuntimeError("XDG_RUNTIME_DIR is required for external confirmation challenges")
-    return pathlib.Path(runtime) / "hypr-agent-portal-confirmations"
+    return pathlib.Path(runtime) / "brand-confirmations"
 
 
 def _validate_directory(fd: int, path: pathlib.Path) -> None:
@@ -608,12 +608,12 @@ def _dispatch_native_approval(action: str, challenge_id: str, ttl_ms: int | None
     if provider == "lua":
         commands = [
             [binary, "dispatch", f"hl.plugin.{namespace}.approval({_lua_quote(payload)})"]
-            for namespace in ("hypr_agent_portal", "hypr_agent_protal")
+            for namespace in ("brand", "hypr_agent_protal")
         ]
     else:
         commands = [
             [binary, "dispatch", dispatcher, payload]
-            for dispatcher in ("hypr-agent-portal:approval", "hypr-agent-protal:approval")
+            for dispatcher in ("brand:approval", "brand:approval")
         ]
 
     for index, command in enumerate(commands):
@@ -1263,23 +1263,23 @@ def _env_set(env: Mapping[str, str], name: str) -> frozenset[str]:
 
 
 def policy_config_from_env(env: Mapping[str, str] | None = None) -> PolicyConfig:
-    """Build policy configuration from ``HYPR_AGENT_PORTAL_SECURITY_*`` vars."""
+    """Build policy configuration from ``BRAND_SECURITY_*`` vars."""
     source = os.environ if env is None else env
     values = dict(source)
-    prefix = "HYPR_AGENT_PORTAL_SECURITY_"
+    prefix = "BRAND_SECURITY_"
 
     # Public short aliases keep the common configuration approachable while
     # SECURITY_* remains the unambiguous canonical form. Canonical values win.
     for short_name, canonical_name in {
-        "HYPR_AGENT_PORTAL_READONLY": prefix + "READONLY",
-        "HYPR_AGENT_PORTAL_DRYRUN": prefix + "DRY_RUN",
-        "HYPR_AGENT_PORTAL_APP_POLICIES": prefix + "APP_AUTHORIZATIONS",
-        "HYPR_AGENT_PORTAL_PRIVACY_CLASSES": prefix + "PRIVACY_CLASSES",
+        "BRAND_READONLY": prefix + "READONLY",
+        "BRAND_DRYRUN": prefix + "DRY_RUN",
+        "BRAND_APP_POLICIES": prefix + "APP_AUTHORIZATIONS",
+        "BRAND_PRIVACY_CLASSES": prefix + "PRIVACY_CLASSES",
     }.items():
         if canonical_name not in values and short_name in values:
             values[canonical_name] = values[short_name]
 
-    confinement = values.get("HYPR_AGENT_PORTAL_CONFINE", "")
+    confinement = values.get("BRAND_CONFINE", "")
     if confinement:
         buckets: dict[str, list[str]] = {"class": [], "workspace": [], "address": []}
         launched_only = False
@@ -1289,15 +1289,15 @@ def policy_config_from_env(env: Mapping[str, str] | None = None) -> PolicyConfig
                 continue
             kind, separator, value = item.partition(":")
             if not separator or kind.casefold() not in buckets or not value.strip():
-                raise ValueError(f"invalid HYPR_AGENT_PORTAL_CONFINE item: {item!r}")
+                raise ValueError(f"invalid BRAND_CONFINE item: {item!r}")
             buckets[kind.casefold()].append(value.strip())
         values.setdefault(prefix + "CONFINE_LAUNCHED", "1" if launched_only else "0")
         values.setdefault(prefix + "CONFINE_CLASSES", ",".join(buckets["class"]))
         values.setdefault(prefix + "CONFINE_WORKSPACES", ",".join(buckets["workspace"]))
         values.setdefault(prefix + "CONFINE_ADDRESSES", ",".join(buckets["address"]))
 
-    if prefix + "CLIPBOARD_PERMISSIONS" not in values and "HYPR_AGENT_PORTAL_CLIPBOARD" in values:
-        clipboard_short = values["HYPR_AGENT_PORTAL_CLIPBOARD"].strip().casefold()
+    if prefix + "CLIPBOARD_PERMISSIONS" not in values and "BRAND_CLIPBOARD" in values:
+        clipboard_short = values["BRAND_CLIPBOARD"].strip().casefold()
         clipboard_aliases = {
             "none": "",
             "read": "read",
@@ -1305,7 +1305,7 @@ def policy_config_from_env(env: Mapping[str, str] | None = None) -> PolicyConfig
             "full": ",".join(item.value for item in ClipboardCapability),
         }
         values[prefix + "CLIPBOARD_PERMISSIONS"] = clipboard_aliases.get(
-            clipboard_short, values["HYPR_AGENT_PORTAL_CLIPBOARD"]
+            clipboard_short, values["BRAND_CLIPBOARD"]
         )
     authorizations: dict[str, AuthorizationLevel] = {}
     for entry in _env_set(values, prefix + "APP_AUTHORIZATIONS"):

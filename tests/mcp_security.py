@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Security contract tests for the hypr-agent-portal MCP server.
+"""Security contract tests for the brand MCP server.
 
 These tests intentionally avoid a running Hyprland session.  Policy decisions,
 audit redaction, tool exposure, and dry-run interception must all be testable
@@ -25,13 +25,13 @@ from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 MCP_DIR = ROOT / "mcp"
-MCP = MCP_DIR / "hypr-agent-portal-mcp.py"
+MCP = MCP_DIR / "brand-mcp.py"
 POLICY = MCP_DIR / "security_policy.py"
 AUDIT = MCP_DIR / "security_audit.py"
 
 
 def load_path(path: pathlib.Path, stem: str) -> Any:
-    name = f"hypr_agent_portal_test_{stem}_{uuid.uuid4().hex}"
+    name = f"brand_test_{stem}_{uuid.uuid4().hex}"
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -46,7 +46,7 @@ def load_path(path: pathlib.Path, stem: str) -> Any:
 
 @contextlib.contextmanager
 def security_environment(**values: str | None) -> Iterator[None]:
-    prefix = "HYPR_AGENT_PORTAL_"
+    prefix = "BRAND_"
     # Integration tests exercise mutation plumbing explicitly. Production's
     # unconfigured default remains VIEW and is covered by the policy test.
     if "SECURITY_DEFAULT_AUTHORIZATION" not in values:
@@ -784,7 +784,7 @@ def test_native_approval_dispatch_supports_lua_and_compat_namespace() -> None:
         assert command[:2] == ["/usr/bin/hyprctl", "dispatch"]
         if '.approval("arm ' in expression or '.approval("cancel ' in expression:
             return mod.subprocess.CompletedProcess(command, 0, "ok\n", "")
-        if "hypr_agent_portal.approval" in expression:
+        if "brand.approval" in expression:
             return mod.subprocess.CompletedProcess(command, 1, "lua plugin function unavailable\n", "")
         assert "hypr_agent_protal.approval" in expression
         return mod.subprocess.CompletedProcess(command, 1, "approval-pending-press-f12\n", "")
@@ -803,10 +803,10 @@ def test_native_approval_dispatch_supports_lua_and_compat_namespace() -> None:
 
     dispatches = [command for command in calls if command[1] == "dispatch"]
     assert dispatches == [
-        ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.hypr_agent_portal.approval("arm {challenge} 5000")'],
-        ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.hypr_agent_portal.approval("status {challenge}")'],
+        ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.brand.approval("arm {challenge} 5000")'],
+        ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.brand.approval("status {challenge}")'],
         ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.hypr_agent_protal.approval("status {challenge}")'],
-        ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.hypr_agent_portal.approval("cancel {challenge}")'],
+        ["/usr/bin/hyprctl", "dispatch", f'hl.plugin.brand.approval("cancel {challenge}")'],
     ]
 
 
@@ -819,7 +819,7 @@ def test_native_approval_dispatch_keeps_legacy_provider_argv_safe() -> None:
         calls.append(list(command))
         if command[1:] == ["systeminfo"]:
             return mod.subprocess.CompletedProcess(command, 0, "configProvider: hyprlang\n", "")
-        if command[2] == "hypr-agent-portal:approval":
+        if command[2] == "brand:approval":
             return mod.subprocess.CompletedProcess(command, 1, "Invalid dispatcher\n", "")
         return mod.subprocess.CompletedProcess(command, 0, "ok\n", "")
 
@@ -833,8 +833,8 @@ def test_native_approval_dispatch_keeps_legacy_provider_argv_safe() -> None:
         mod._trusted_hyprctl_binary = original_binary
         mod.subprocess.run = original_run
     assert calls[-2:] == [
-        ["/usr/bin/hyprctl", "dispatch", "hypr-agent-portal:approval", f"cancel {challenge}"],
-        ["/usr/bin/hyprctl", "dispatch", "hypr-agent-protal:approval", f"cancel {challenge}"],
+        ["/usr/bin/hyprctl", "dispatch", "brand:approval", f"cancel {challenge}"],
+        ["/usr/bin/hyprctl", "dispatch", "brand:approval", f"cancel {challenge}"],
     ]
 
 def test_policy_clipboard_capabilities_are_independent() -> None:

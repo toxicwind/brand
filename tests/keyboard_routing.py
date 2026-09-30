@@ -5,12 +5,12 @@ from types import SimpleNamespace
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-MCP = ROOT / "mcp" / "hypr-agent-portal-mcp.py"
+MCP = ROOT / "mcp" / "brand-mcp.py"
 PLUGIN = ROOT / "src" / "plugin" / "main.cpp"
 
 
 def load_mcp():
-    spec = importlib.util.spec_from_file_location("hypr_agent_portal_mcp_keyboard", MCP)
+    spec = importlib.util.spec_from_file_location("brand_mcp_keyboard", MCP)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
@@ -170,8 +170,8 @@ def test_plugin_focus_invariants() -> None:
     assert "validApprovalChallengeId" in approval
     assert "ttlMs < 1000 || ttlMs > 120000" in approval
     assert "never extends its" in approval
-    assert '"hypr-agent-portal:approval"' in source
-    assert '"hypr-agent-protal:approval"' in source
+    assert '"brand:approval"' in source
+    assert '"brand:approval"' in source
     assert "case eLuaDispatcher::APPROVAL: return dispatchApproval(payload);" in source
     assert "int luaApproval(lua_State* L)" in source
     assert 'addLuaFunction(g_pluginHandle, name, "approval", luaApproval)' in source

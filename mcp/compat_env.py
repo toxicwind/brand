@@ -14,19 +14,19 @@ from pathlib import Path
 from typing import Mapping, MutableMapping
 
 
-CURRENT_NAME = "hypr-agent-portal"
-LEGACY_NAME = "hypr-agent-protal"
-CURRENT_ENV_PREFIX = "HYPR_AGENT_PORTAL_"
+CURRENT_NAME = "brand"
+LEGACY_NAME = "brand"
+CURRENT_ENV_PREFIX = "BRAND_"
 LEGACY_ENV_PREFIX = "HYPR_AGENT_PROTAL_"
 
 # Keep this list explicit so an accidental similarly named variable is not
 # silently promoted into the process environment.
 ENV_ALIASES: dict[str, str] = {
-    "HYPR_AGENT_PORTAL_ATSPI_CHILD": "HYPR_AGENT_PROTAL_ATSPI_CHILD",
-    "HYPR_AGENT_PORTAL_CTL": "HYPR_AGENT_PROTAL_CTL",
-    "HYPR_AGENT_PORTAL_ELEMENT_CLICK_MODE": "HYPR_AGENT_PROTAL_ELEMENT_CLICK_MODE",
-    "HYPR_AGENT_PORTAL_MODEL_MAX_DIMENSION": "HYPR_AGENT_PROTAL_MODEL_MAX_DIMENSION",
-    "HYPR_AGENT_PORTAL_MODEL_RESOLUTION": "HYPR_AGENT_PROTAL_MODEL_RESOLUTION",
+    "BRAND_ATSPI_CHILD": "HYPR_AGENT_PROTAL_ATSPI_CHILD",
+    "BRAND_CTL": "HYPR_AGENT_PROTAL_CTL",
+    "BRAND_ELEMENT_CLICK_MODE": "HYPR_AGENT_PROTAL_ELEMENT_CLICK_MODE",
+    "BRAND_MODEL_MAX_DIMENSION": "HYPR_AGENT_PROTAL_MODEL_MAX_DIMENSION",
+    "BRAND_MODEL_RESOLUTION": "HYPR_AGENT_PROTAL_MODEL_RESOLUTION",
 }
 
 
@@ -123,5 +123,5 @@ def config_namespace_candidates(*, lua: bool) -> tuple[str, str]:
     """Return canonical then legacy Hyprland configuration namespaces."""
 
     if lua:
-        return "plugin.hypr_agent_portal", "plugin.hypr_agent_protal"
-    return "plugin:hypr-agent-portal", "plugin:hypr-agent-protal"
+        return "plugin.brand", "plugin.hypr_agent_protal"
+    return "plugin:brand", "plugin:brand"

@@ -20,7 +20,7 @@ sys.modules[SPEC.name] = hypr_management
 SPEC.loader.exec_module(hypr_management)
 
 CTL_LOADER = importlib.machinery.SourceFileLoader(
-    "hypr_agent_portalctl_management", str(ROOT / "scripts" / "hypr-agent-portalctl")
+    "brandctl_management", str(ROOT / "scripts" / "brandctl")
 )
 portalctl = CTL_LOADER.load_module()
 
@@ -92,7 +92,7 @@ class FakeCompositor:
             return hypr_management.CommandResult(returncode=1, stderr="unexpected command")
         dispatcher = command[2]
         arguments = command[3:]
-        if dispatcher == "hypr-agent-portal:manage":
+        if dispatcher == "brand:manage":
             parts = arguments[0].split(",")
             action = parts[0]
             if action in {"workspace_switch", "workspace_create", "workspace_activate"}:
@@ -240,7 +240,7 @@ class HyprManagementTests(unittest.TestCase):
         result = self.manager.focus("0xabc")
         self.assertEqual(
             result.commands,
-            (("hyprctl", "dispatch", "hypr-agent-portal:manage", "focus,address:0xabc@pid=101@start=1001"),),
+            (("hyprctl", "dispatch", "brand:manage", "focus,address:0xabc@pid=101@start=1001"),),
         )
         self.assertEqual(self.fake.active_address, "0xabc")
         closed = self.manager.close("address:0xabc")
@@ -252,12 +252,12 @@ class HyprManagementTests(unittest.TestCase):
         moved = self.manager.move("0xabc", -50, 75)
         self.assertEqual(
             moved.commands[0],
-            ("hyprctl", "dispatch", "hypr-agent-portal:manage", "move,address:0xabc@pid=101@start=1001,-50,75"),
+            ("hyprctl", "dispatch", "brand:manage", "move,address:0xabc@pid=101@start=1001,-50,75"),
         )
         resized = self.manager.resize("0xabc", 1024, 768)
         self.assertEqual(
             resized.commands[0],
-            ("hyprctl", "dispatch", "hypr-agent-portal:manage", "resize,address:0xabc@pid=101@start=1001,1024,768"),
+            ("hyprctl", "dispatch", "brand:manage", "resize,address:0xabc@pid=101@start=1001,1024,768"),
         )
         self.assertEqual(resized.after["size"], [1024, 768])
         with self.assertRaises(hypr_management.InvalidRequest):
@@ -274,7 +274,7 @@ class HyprManagementTests(unittest.TestCase):
         }
         for action in expected:
             command = self.manager._manage_command(action, before)
-            self.assertEqual(command[:3], ("hyprctl", "dispatch", "hypr-agent-portal:manage"))
+            self.assertEqual(command[:3], ("hyprctl", "dispatch", "brand:manage"))
             self.assertTrue(command[3].startswith(f"{action},address:0xabc@pid=101@start=1001"))
 
     def test_recycled_address_before_dispatch_is_rejected_without_mutation(self) -> None:
@@ -316,7 +316,7 @@ class HyprManagementTests(unittest.TestCase):
     def test_recycled_address_after_dispatch_fails_semantic_verification(self) -> None:
         def replacing_runner(argv):
             result = self.fake(argv)
-            if tuple(argv)[:3] == ("hyprctl", "dispatch", "hypr-agent-portal:manage"):
+            if tuple(argv)[:3] == ("hyprctl", "dispatch", "brand:manage"):
                 target = next(item for item in self.fake.windows if item["address"] == "0xabc")
                 target.update(
                     pid=999,
@@ -340,10 +340,10 @@ class HyprManagementTests(unittest.TestCase):
     def test_minimize_uses_private_special_workspace_and_can_restore(self) -> None:
         minimized = self.manager.minimize("0xabc")
         self.assertEqual(minimized.action, "minimize")
-        self.assertEqual(minimized.after["workspace"]["name"], "special:hypr-agent-portal-minimized")
+        self.assertEqual(minimized.after["workspace"]["name"], "special:brand-minimized")
         self.assertEqual(
             minimized.commands[0][-1],
-            "minimize,address:0xabc@pid=101@start=1001,special:hypr-agent-portal-minimized",
+            "minimize,address:0xabc@pid=101@start=1001,special:brand-minimized",
         )
         restored = self.manager.minimize("0xabc", False)
         self.assertEqual(restored.action, "restore")
@@ -358,14 +358,14 @@ class HyprManagementTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(hypr_management.InvalidRequest, "original workspace is unknown"):
             self.manager.minimize("0xabc", False)
-        self.assertEqual(recycled["workspace"]["name"], "special:hypr-agent-portal-minimized")
+        self.assertEqual(recycled["workspace"]["name"], "special:brand-minimized")
 
     def test_maximize_and_fullscreen_are_focused_target_batches(self) -> None:
         maximized = self.manager.maximize("0xabc")
         self.assertEqual(maximized.after["fullscreen"], 1)
         self.assertEqual(
             maximized.commands[0],
-            ("hyprctl", "dispatch", "hypr-agent-portal:manage", "maximize,address:0xabc@pid=101@start=1001"),
+            ("hyprctl", "dispatch", "brand:manage", "maximize,address:0xabc@pid=101@start=1001"),
         )
         self.manager.maximize("0xabc", False)
         fullscreen = self.manager.fullscreen("0xabc")
@@ -408,17 +408,17 @@ class HyprManagementTests(unittest.TestCase):
         with self.assertRaises(hypr_management.InvalidRequest):
             self.manager.rename_workspace("special:scratch", "renamed")
         self.assertIn(
-            ("hyprctl", "dispatch", "hypr-agent-portal:manage", "workspace_switch,1"),
+            ("hyprctl", "dispatch", "brand:manage", "workspace_switch,1"),
             self.fake.commands,
         )
         self.assertIn(
-            ("hyprctl", "dispatch", "hypr-agent-portal:manage", "workspace_rename,name:dev,development"),
+            ("hyprctl", "dispatch", "brand:manage", "workspace_rename,name:dev,development"),
             self.fake.commands,
         )
         special = self.manager.special_workspace("show_special", "special:scratch")
         self.assertEqual(
             special,
-            ("hyprctl", "dispatch", "hypr-agent-portal:manage", "special_show,special:scratch"),
+            ("hyprctl", "dispatch", "brand:manage", "special_show,special:scratch"),
         )
 
     def test_workspace_switch_create_and_activate_inverse_matrix(self) -> None:
@@ -486,8 +486,8 @@ class HyprManagementTests(unittest.TestCase):
         self.assertIn("window->m_isMapped", block)
         self.assertIn("runBuiltinDispatcher", block)
         self.assertNotIn("runBuiltinDispatcher(parts[0]", block)
-        self.assertIn('"hypr-agent-portal:manage", dispatchManage', source)
-        self.assertIn('"hypr-agent-protal:manage", dispatchManage', source)
+        self.assertIn('"brand:manage", dispatchManage', source)
+        self.assertIn('"brand:manage", dispatchManage', source)
         self.assertIn('addLuaFunction(g_pluginHandle, name, "manage", luaManage)', source)
 
     def test_portalctl_manage_dispatch_is_provider_aware(self) -> None:
@@ -500,7 +500,7 @@ class HyprManagementTests(unittest.TestCase):
             return __import__("subprocess").CompletedProcess(argv, 0, stdout, "")
 
         with mock.patch.object(portalctl.subprocess, "run", side_effect=fake_run):
-            result = portalctl.dispatch("hypr-agent-portal:manage", payload)
+            result = portalctl.dispatch("brand:manage", payload)
         self.assertEqual(result.returncode, 0)
         provider_probes = [call for call in lua_calls if call and call[0] == "hyprctl" and "systeminfo" in call]
         self.assertEqual(len(provider_probes), 1, lua_calls)
@@ -509,14 +509,14 @@ class HyprManagementTests(unittest.TestCase):
             for call in lua_calls
             if call[:2] == ("hyprctl", "dispatch")
             and len(call) >= 3
-            and call[2].startswith("hl.plugin.hypr_agent_portal.manage(")
+            and call[2].startswith("hl.plugin.brand.manage(")
         ]
         self.assertEqual(
             lua_manage_calls,
-            [("hyprctl", "dispatch", 'hl.plugin.hypr_agent_portal.manage("focus,address:0xabc@pid=101@start=1001")')],
+            [("hyprctl", "dispatch", 'hl.plugin.brand.manage("focus,address:0xabc@pid=101@start=1001")')],
         )
         self.assertEqual(
-            portalctl.lua_plugin_dispatcher("hypr-agent-protal:manage", "workspace_activate,name:dev"),
+            portalctl.lua_plugin_dispatcher("brand:manage", "workspace_activate,name:dev"),
             'hl.plugin.hypr_agent_protal.manage("workspace_activate,name:dev")',
         )
 
@@ -528,13 +528,13 @@ class HyprManagementTests(unittest.TestCase):
             return __import__("subprocess").CompletedProcess(argv, 0, stdout, "")
 
         with mock.patch.object(portalctl.subprocess, "run", side_effect=fake_legacy_run):
-            portalctl.dispatch("hypr-agent-protal:manage", payload)
+            portalctl.dispatch("brand:manage", payload)
         legacy_probes = [call for call in legacy_calls if call and call[0] == "hyprctl" and "systeminfo" in call]
         self.assertEqual(len(legacy_probes), 1, legacy_calls)
-        legacy_manage_calls = [call for call in legacy_calls if call[:3] == ("hyprctl", "dispatch", "hypr-agent-protal:manage")]
+        legacy_manage_calls = [call for call in legacy_calls if call[:3] == ("hyprctl", "dispatch", "brand:manage")]
         self.assertEqual(
             legacy_manage_calls,
-            [("hyprctl", "dispatch", "hypr-agent-protal:manage", payload)],
+            [("hyprctl", "dispatch", "brand:manage", payload)],
         )
 
 

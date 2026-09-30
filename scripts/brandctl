@@ -110,7 +110,7 @@ def model_output_dimensions(width: int, height: int, logical_width: float, logic
     return width, height
 
 
-PRIVATE_ROOT_NAME = f"hypr-agent-portal-{os.getuid()}"
+PRIVATE_ROOT_NAME = f"brand-{os.getuid()}"
 MAX_CURSOR_STATE_BYTES = 1024 * 1024
 
 
@@ -167,7 +167,7 @@ def state_root(output_dir: str | None = None) -> pathlib.Path:
         os.close(base_fd)
 
     root = base / PRIVATE_ROOT_NAME
-    root_fd = _validated_private_directory(root, label="hypr-agent-portal private state directory")
+    root_fd = _validated_private_directory(root, label="brand private state directory")
     os.close(root_fd)
     return root
 
@@ -175,7 +175,7 @@ def state_root(output_dir: str | None = None) -> pathlib.Path:
 def _write_exclusive(root: pathlib.Path, name: str, data: bytes) -> pathlib.Path:
     if pathlib.PurePath(name).name != name or name in {"", ".", ".."}:
         raise RuntimeError("invalid private artifact name")
-    root_fd = _validated_private_directory(root, label="hypr-agent-portal private state directory")
+    root_fd = _validated_private_directory(root, label="brand private state directory")
     fd = -1
     try:
         flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | getattr(os, "O_NOFOLLOW", 0)
@@ -195,7 +195,7 @@ def _write_exclusive(root: pathlib.Path, name: str, data: bytes) -> pathlib.Path
 def _atomic_write_private(root: pathlib.Path, name: str, data: bytes) -> pathlib.Path:
     temp_name = f".{name}.{secrets.token_hex(12)}.tmp"
     temp_path = _write_exclusive(root, temp_name, data)
-    root_fd = _validated_private_directory(root, label="hypr-agent-portal private state directory")
+    root_fd = _validated_private_directory(root, label="brand private state directory")
     try:
         os.replace(temp_name, name, src_dir_fd=root_fd, dst_dir_fd=root_fd)
         os.fsync(root_fd)
@@ -615,26 +615,26 @@ def lua_quote(value: str) -> str:
 
 def lua_plugin_dispatcher(dispatcher: str, payload: str) -> str | None:
     mapping = {
-        "hypr-agent-portal:pointer": ("hypr_agent_portal", "pointer"),
-        "hypr-agent-portal:pointer-relative": ("hypr_agent_portal", "pointer_relative"),
-        "hypr-agent-portal:indicator": ("hypr_agent_portal", "indicator"),
-        "hypr-agent-portal:keyboard": ("hypr_agent_portal", "keyboard"),
-        "hypr-agent-portal:screenshot": ("hypr_agent_portal", "screenshot"),
-        "hypr-agent-portal:session": ("hypr_agent_portal", "session"),
-        "hypr-agent-portal:manage": ("hypr_agent_portal", "manage"),
-        "hypr-agent-portal:panic": ("hypr_agent_portal", "panic"),
-        "hypr-agent-portal:guard": ("hypr_agent_portal", "guard"),
-        "hypr-agent-portal:approval": ("hypr_agent_portal", "approval"),
-        "hypr-agent-protal:pointer": ("hypr_agent_protal", "pointer"),
-        "hypr-agent-protal:pointer-relative": ("hypr_agent_protal", "pointer_relative"),
-        "hypr-agent-protal:indicator": ("hypr_agent_protal", "indicator"),
-        "hypr-agent-protal:keyboard": ("hypr_agent_protal", "keyboard"),
-        "hypr-agent-protal:screenshot": ("hypr_agent_protal", "screenshot"),
-        "hypr-agent-protal:session": ("hypr_agent_protal", "session"),
-        "hypr-agent-protal:manage": ("hypr_agent_protal", "manage"),
-        "hypr-agent-protal:panic": ("hypr_agent_protal", "panic"),
-        "hypr-agent-protal:guard": ("hypr_agent_protal", "guard"),
-        "hypr-agent-protal:approval": ("hypr_agent_protal", "approval"),
+        "brand:pointer": ("brand", "pointer"),
+        "brand:pointer-relative": ("brand", "pointer_relative"),
+        "brand:indicator": ("brand", "indicator"),
+        "brand:keyboard": ("brand", "keyboard"),
+        "brand:screenshot": ("brand", "screenshot"),
+        "brand:session": ("brand", "session"),
+        "brand:manage": ("brand", "manage"),
+        "brand:panic": ("brand", "panic"),
+        "brand:guard": ("brand", "guard"),
+        "brand:approval": ("brand", "approval"),
+        "brand:pointer": ("hypr_agent_protal", "pointer"),
+        "brand:pointer-relative": ("hypr_agent_protal", "pointer_relative"),
+        "brand:indicator": ("hypr_agent_protal", "indicator"),
+        "brand:keyboard": ("hypr_agent_protal", "keyboard"),
+        "brand:screenshot": ("hypr_agent_protal", "screenshot"),
+        "brand:session": ("hypr_agent_protal", "session"),
+        "brand:manage": ("hypr_agent_protal", "manage"),
+        "brand:panic": ("hypr_agent_protal", "panic"),
+        "brand:guard": ("hypr_agent_protal", "guard"),
+        "brand:approval": ("hypr_agent_protal", "approval"),
     }
     target = mapping.get(dispatcher)
     if not target:
@@ -740,8 +740,8 @@ def pointer(args: argparse.Namespace) -> int:
             return 2
         payload = ",".join([args.target, str(args.x), str(args.y), args.action, args.button, str(args.x2), str(args.y2), str(max(0.0, min(args.duration, 3.0)))])
     dispatcher = args.dispatcher
-    if args.relative and dispatcher == "hypr-agent-portal:pointer":
-        dispatcher = "hypr-agent-portal:pointer-relative"
+    if args.relative and dispatcher == "brand:pointer":
+        dispatcher = "brand:pointer-relative"
     result = dispatch(dispatcher, payload)
     if result.returncode != 0:
         print(result.stderr or result.stdout, file=sys.stderr, end="")
@@ -842,7 +842,7 @@ def manage(args: argparse.Namespace) -> int:
 def panic(args: argparse.Namespace) -> int:
     result = dispatch(args.dispatcher, args.action)
     output = (result.stderr or result.stdout or "").strip()
-    panic_active = "hypr-agent-portal panic is active" in output.casefold()
+    panic_active = "brand panic is active" in output.casefold()
     if args.action == "status" and panic_active:
         if args.json:
             print(json.dumps({"ok": True, "action": args.action, "panicActive": True}))
@@ -857,7 +857,7 @@ def panic(args: argparse.Namespace) -> int:
         status_output = (status.stderr or status.stdout or "").strip()
         if status.returncode == 0:
             panic_active = False
-        elif "hypr-agent-portal panic is active" in status_output.casefold():
+        elif "brand panic is active" in status_output.casefold():
             panic_active = True
         else:
             print(status_output or "native panic status probe failed", file=sys.stderr)
@@ -1026,11 +1026,11 @@ def annotate_relation(client: dict, target: dict) -> dict:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="hypr-agent-portal command line bridge")
+    parser = argparse.ArgumentParser(description="brand command line bridge")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     shot = sub.add_parser("screenshot", help="capture a compositor screenshot session")
-    shot.add_argument("--dispatcher", default="hypr-agent-portal:screenshot")
+    shot.add_argument("--dispatcher", default="brand:screenshot")
     shot.add_argument("--output-dir")
     shot.add_argument("--target", help="optional Hyprland window selector for unoccluded target-window capture")
     shot.add_argument("--base64", action="store_true")
@@ -1056,7 +1056,7 @@ def build_parser() -> argparse.ArgumentParser:
     ptr.add_argument("--dx", type=float, help="horizontal wheel ticks for scroll")
     ptr.add_argument("--duration", type=float, default=0.2, help="drag pacing duration in seconds")
     ptr.add_argument("--relative", action="store_true", help="interpret x/y and drag destination as window-relative logical coordinates")
-    ptr.add_argument("--dispatcher", default="hypr-agent-portal:pointer")
+    ptr.add_argument("--dispatcher", default="brand:pointer")
     ptr.add_argument("--json", action="store_true")
     ptr.set_defaults(func=pointer)
 
@@ -1065,7 +1065,7 @@ def build_parser() -> argparse.ArgumentParser:
     ind.add_argument("x", type=float, help="global logical x coordinate")
     ind.add_argument("y", type=float, help="global logical y coordinate")
     ind.add_argument("action", nargs="?", default="move", help="action label for cursor animation state")
-    ind.add_argument("--dispatcher", default="hypr-agent-portal:indicator")
+    ind.add_argument("--dispatcher", default="brand:indicator")
     ind.add_argument("--json", action="store_true")
     ind.set_defaults(func=indicator)
 
@@ -1076,31 +1076,31 @@ def build_parser() -> argparse.ArgumentParser:
     key.add_argument("modifiers", nargs="?", default="", help="optional modifiers, for example ctrl+shift")
     key.add_argument("--x", type=float, help="optional global logical x coordinate to resolve a subsurface")
     key.add_argument("--y", type=float, help="optional global logical y coordinate to resolve a subsurface")
-    key.add_argument("--dispatcher", default="hypr-agent-portal:keyboard")
+    key.add_argument("--dispatcher", default="brand:keyboard")
     key.add_argument("--json", action="store_true")
     key.set_defaults(func=keyboard)
 
     sess = sub.add_parser("session", help="begin, sync, or end a related-window workspace guard session")
     sess.add_argument("action", choices=["begin", "sync", "end"])
     sess.add_argument("target", nargs="?", help="Hyprland window regex, for example address:0x1234")
-    sess.add_argument("--dispatcher", default="hypr-agent-portal:session")
+    sess.add_argument("--dispatcher", default="brand:session")
     sess.add_argument("--json", action="store_true")
     sess.set_defaults(func=session)
 
     management = sub.add_parser("manage", help="invoke the identity-bound native window/workspace management gateway")
     management.add_argument("payload", help="strict native manage payload")
-    management.add_argument("--dispatcher", default="hypr-agent-portal:manage")
+    management.add_argument("--dispatcher", default="brand:manage")
     management.add_argument("--json", action="store_true")
     management.set_defaults(func=manage)
 
     stop = sub.add_parser("panic", help="cancel agent activity, latch the panic stop, resume, or query panic state")
     stop.add_argument("action", nargs="?", choices=["panic", "cancel", "resume", "status"], default="panic")
-    stop.add_argument("--dispatcher", default="hypr-agent-portal:panic")
+    stop.add_argument("--dispatcher", default="brand:panic")
     stop.add_argument("--json", action="store_true")
     stop.set_defaults(func=panic)
 
     runtime_guard = sub.add_parser("guard", help="query native panic, lock, exclusive-layer, and keyboard-grab guards")
-    runtime_guard.add_argument("--dispatcher", default="hypr-agent-portal:guard")
+    runtime_guard.add_argument("--dispatcher", default="brand:guard")
     runtime_guard.add_argument("--json", action="store_true", default=True)
     runtime_guard.set_defaults(func=guard)
 

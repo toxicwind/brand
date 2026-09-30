@@ -1,4 +1,4 @@
-"""Optional, local-only OCR backends for hypr-agent-portal.
+"""Optional, local-only OCR backends for brand.
 
 The public :func:`ocr_image` function accepts an image path or bytes and
 returns JSON-serializable OCR words.  Bounding boxes are always expressed in

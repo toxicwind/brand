@@ -299,11 +299,11 @@ def _coerce_result(value: Any) -> CommandResult:
 
 def subprocess_runner(argv: Sequence[str]) -> CommandResult:
     command = list(argv)
-    if len(command) == 4 and command[:3] == ["hyprctl", "dispatch", "hypr-agent-portal:manage"]:
-        source_ctl = Path(__file__).resolve().parents[1] / "scripts" / "hypr-agent-portalctl"
-        portalctl = shutil.which("hypr-agent-portalctl") or (str(source_ctl) if source_ctl.is_file() else "")
+    if len(command) == 4 and command[:3] == ["hyprctl", "dispatch", "brand:manage"]:
+        source_ctl = Path(__file__).resolve().parents[1] / "scripts" / "brandctl"
+        portalctl = shutil.which("brandctl") or (str(source_ctl) if source_ctl.is_file() else "")
         if not portalctl:
-            raise CommandFailed("hypr-agent-portalctl is required for provider-aware native management dispatch")
+            raise CommandFailed("brandctl is required for provider-aware native management dispatch")
         command = [portalctl, "manage", command[3]]
     try:
         completed = subprocess.run(command, check=False, capture_output=True, text=True, timeout=5.0)
@@ -415,7 +415,7 @@ class HyprManagement:
             raise InvalidRequest(f"unsupported native management action: {action!r}")
         target = qualified_window_target(before)
         payload = ",".join((action, target, *(str(value) for value in arguments)))
-        return ("hyprctl", "dispatch", "hypr-agent-portal:manage", payload)
+        return ("hyprctl", "dispatch", "brand:manage", payload)
 
     def focus(self, address: str) -> ManagementResult:
         target = normalize_address(address)
@@ -479,7 +479,7 @@ class HyprManagement:
         address: str,
         enabled: bool = True,
         *,
-        minimized_workspace: str = "special:hypr-agent-portal-minimized",
+        minimized_workspace: str = "special:brand-minimized",
         restore_workspace: str | int | None = None,
     ) -> ManagementResult:
         target = normalize_address(address)
@@ -574,7 +574,7 @@ class HyprManagement:
             return ManagementResult("switch_workspace", selector, (), before, before, False, True)
         if self._find_workspace(selector) is None:
             raise TargetNotFound(f"workspace {selector} was not found")
-        command = ("hyprctl", "dispatch", "hypr-agent-portal:manage", f"workspace_switch,{selector}")
+        command = ("hyprctl", "dispatch", "brand:manage", f"workspace_switch,{selector}")
         self._run(command)
         after = dict(self.state.active_workspace())
         if not workspace_matches(after, selector):
@@ -586,7 +586,7 @@ class HyprManagement:
         if self._find_workspace(selector) is not None:
             raise InvalidRequest(f"workspace {selector} already exists")
         before = dict(self.state.active_workspace())
-        command = ("hyprctl", "dispatch", "hypr-agent-portal:manage", f"workspace_create,{selector}")
+        command = ("hyprctl", "dispatch", "brand:manage", f"workspace_create,{selector}")
         self._run(command)
         after = dict(self.state.active_workspace())
         if not workspace_matches(after, selector):
@@ -599,7 +599,7 @@ class HyprManagement:
         before = dict(self.state.active_workspace())
         if workspace_matches(before, selector):
             return ManagementResult("activate_workspace", selector, (), before, before, False, True)
-        command = ("hyprctl", "dispatch", "hypr-agent-portal:manage", f"workspace_activate,{selector}")
+        command = ("hyprctl", "dispatch", "brand:manage", f"workspace_activate,{selector}")
         self._run(command)
         after = dict(self.state.active_workspace())
         if not workspace_matches(after, selector):
@@ -625,7 +625,7 @@ class HyprManagement:
             raise InvalidRequest("new workspace name must be a plain safe name")
         if _workspace_name(current) == name:
             return ManagementResult("rename_workspace", selector, (), current, current, False, True)
-        command = ("hyprctl", "dispatch", "hypr-agent-portal:manage", f"workspace_rename,{selector},{name}")
+        command = ("hyprctl", "dispatch", "brand:manage", f"workspace_rename,{selector},{name}")
         self._run(command)
         after = self._find_workspace(f"name:{name}")
         if after is None or int(after.get("id", -1)) != workspace_id:
@@ -638,7 +638,7 @@ class HyprManagement:
         selector = normalize_workspace(workspace)
         if native is None or not (selector == "special" or selector.startswith("special:")):
             raise InvalidRequest("special workspace action or selector is invalid")
-        command = ("hyprctl", "dispatch", "hypr-agent-portal:manage", f"{native},{selector}")
+        command = ("hyprctl", "dispatch", "brand:manage", f"{native},{selector}")
         self._run(command)
         return command
 

@@ -8,8 +8,8 @@ import tempfile
 
 def load_ctl():
     repo = pathlib.Path(__file__).resolve().parents[1]
-    path = repo / "scripts" / "hypr-agent-portalctl"
-    loader = importlib.machinery.SourceFileLoader("hypr_agent_portalctl", str(path))
+    path = repo / "scripts" / "brandctl"
+    loader = importlib.machinery.SourceFileLoader("brandctl", str(path))
     spec = importlib.util.spec_from_loader(loader.name, loader)
     module = importlib.util.module_from_spec(spec)
     loader.exec_module(module)

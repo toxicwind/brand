@@ -44,7 +44,7 @@
 
 using Render::GL::g_pHyprOpenGL;
 
-namespace hypr_agent_portal {
+namespace brand {
 namespace {
 
 using Json = nlohmann::ordered_json;
@@ -776,4 +776,4 @@ ScreenshotResult captureScreenshotSession(const std::filesystem::path& outputJso
     return {.success = true};
 }
 
-} // namespace hypr_agent_portal
+} // namespace brand

@@ -1,4 +1,4 @@
-"""Installed entry point for the hypr-agent-portal stdio MCP server."""
+"""Installed entry point for the brand stdio MCP server."""
 
 from __future__ import annotations
 
@@ -8,14 +8,14 @@ import runpy
 import sys
 
 
-_DISTRIBUTION_NAME = "hypr-agent-portal"
-_SERVER_SCRIPT_NAME = "hypr-agent-portal-mcp.py"
+_DISTRIBUTION_NAME = "brand"
+_SERVER_SCRIPT_NAME = "brand-mcp.py"
 
 
 def _console_sibling() -> pathlib.Path | None:
     """Return the server beside the invoked console script, when unambiguous."""
     invoked = pathlib.Path(sys.argv[0])
-    if invoked.name != "hypr-agent-portal":
+    if invoked.name != "brand":
         return None
     # A bare argv[0] would resolve relative to an attacker-controlled cwd. The
     # shell normally supplies the resolved path for a PATH-launched executable.

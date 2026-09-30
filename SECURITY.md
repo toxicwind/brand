@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are made on the latest released version of hypr-agent-portal.
+Security fixes are made on the latest released version of brand.
 Older releases and untagged development snapshots are not supported.
 
 | Version | Supported |
@@ -20,9 +20,9 @@ commit pin.
 Do not open a public issue for a suspected vulnerability. Use GitHub's private
 vulnerability reporting for this repository:
 
-<https://github.com/gfhdhytghd/Hypr-Agent-Portal/security/advisories/new>
+<https://github.com/toxicwind/brand/security/advisories/new>
 
-Include the hypr-agent-portal version or commit, Hyprland version, compositor
+Include the brand version or commit, Hyprland version, compositor
 configuration provider, affected application type (native Wayland or
 XWayland), and minimal reproduction steps. Remove credentials, clipboard
 contents, screenshots containing private data, and other secrets before

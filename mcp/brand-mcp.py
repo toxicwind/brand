@@ -86,8 +86,8 @@ def env_enabled(name: str, default: bool = False) -> bool:
 
 
 SECURITY_AUDIT: AuditJournal | None = None
-if env_enabled("HYPR_AGENT_PORTAL_SECURITY_AUDIT", False):
-    SECURITY_AUDIT = AuditJournal(os.environ.get("HYPR_AGENT_PORTAL_SECURITY_AUDIT_NAME", "audit.jsonl"))
+if env_enabled("BRAND_SECURITY_AUDIT", False):
+    SECURITY_AUDIT = AuditJournal(os.environ.get("BRAND_SECURITY_AUDIT_NAME", "audit.jsonl"))
 PROCESS_MUTATION_LEASE: ProcessMutationLease | None = None
 # This latch covers mutation paths that do not pass through the native input
 # dispatchers (AT-SPI, DBusMenu, clipboard, and launch).  It is deliberately
@@ -96,9 +96,9 @@ SERVER_PANIC_ACTIVE = False
 
 _ATSPI_INIT_ERROR: str | None | bool = None
 _ATSPI: Any = None
-ATSPI_CHILD_ENV = "HYPR_AGENT_PORTAL_ATSPI_CHILD"
+ATSPI_CHILD_ENV = "BRAND_ATSPI_CHILD"
 ATSPI_CHILD_MODES = {"--atspi-probe", "--atspi-snapshot", "--atspi-action"}
-ELEMENT_CLICK_MODE_ENV = "HYPR_AGENT_PORTAL_ELEMENT_CLICK_MODE"
+ELEMENT_CLICK_MODE_ENV = "BRAND_ELEMENT_CLICK_MODE"
 SESSION_ENV_KEYS = ("XDG_RUNTIME_DIR", "DBUS_SESSION_BUS_ADDRESS", "WAYLAND_DISPLAY", "DISPLAY", "HYPRLAND_INSTANCE_SIGNATURE")
 A11Y_LAUNCH_ENV = {
     "NO_AT_BRIDGE": "0",
@@ -125,21 +125,21 @@ CHROMIUM_LIKE_EXECUTABLES = {
 
 
 def find_ctl() -> pathlib.Path:
-    candidates = [pathlib.Path(p) for p in [os.environ.get("HYPR_AGENT_PORTAL_CTL")] if p]
+    candidates = [pathlib.Path(p) for p in [os.environ.get("BRAND_CTL")] if p]
     candidates.extend(
         [
-            ROOT / "scripts" / "hypr-agent-portalctl",
-            pathlib.Path(__file__).resolve().with_name("hypr-agent-portalctl"),
+            ROOT / "scripts" / "brandctl",
+            pathlib.Path(__file__).resolve().with_name("brandctl"),
         ]
     )
-    found = shutil.which("hypr-agent-portalctl")
+    found = shutil.which("brandctl")
     if found:
         candidates.append(pathlib.Path(found))
 
     for candidate in candidates:
         if candidate.is_file():
             return candidate
-    raise RuntimeError("hypr-agent-portalctl not found")
+    raise RuntimeError("brandctl not found")
 
 
 COMPUTER_SCHEMA: dict[str, Any] = {
@@ -482,14 +482,14 @@ def tool_definitions() -> list[dict[str, Any]]:
     definitions = [
         {
             "name": "computer",
-            "title": "hypr-agent-portal",
-            "description": "hypr-agent-portal compatibility tool for Hyprland background Computer Use, including browser/Chromium control through Hyprland. Prefer app plus get_app_state/screenshot coordinates; target/x/y global coordinates are only the low-level fallback. Do not use Browser MCP when the user explicitly asks for hypr-agent-portal. Do not use the obsolete hyprcum namespace.",
+            "title": "brand",
+            "description": "brand compatibility tool for Hyprland background Computer Use, including browser/Chromium control through Hyprland. Prefer app plus get_app_state/screenshot coordinates; target/x/y global coordinates are only the low-level fallback. Do not use Browser MCP when the user explicitly asks for brand. Do not use the obsolete hyprcum namespace.",
             "inputSchema": COMPUTER_SCHEMA,
             "annotations": ACTION_ANNOTATIONS,
         },
         {
             "name": "list_apps",
-            "description": "List running Hyprland apps/windows available to hypr-agent-portal. Start here before choosing a target app unless the user explicitly asks to launch a new app/window.",
+            "description": "List running Hyprland apps/windows available to brand. Start here before choosing a target app unless the user explicitly asks to launch a new app/window.",
             "annotations": READ_ONLY_ANNOTATIONS,
             "inputSchema": object_schema({}),
         },
@@ -943,9 +943,9 @@ def call_ctl(args: list[str]) -> dict[str, Any]:
             timeout=MAX_TOOL_WAIT_SECONDS,
         )
     except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(f"hypr-agent-portalctl timed out after {MAX_TOOL_WAIT_SECONDS:g}s") from exc
+        raise RuntimeError(f"brandctl timed out after {MAX_TOOL_WAIT_SECONDS:g}s") from exc
     if proc.returncode != 0:
-        raise RuntimeError((proc.stderr or proc.stdout or f"hypr-agent-portalctl exited {proc.returncode}").strip())
+        raise RuntimeError((proc.stderr or proc.stdout or f"brandctl exited {proc.returncode}").strip())
     if not proc.stdout.strip():
         return {}
     return json.loads(proc.stdout)
@@ -959,7 +959,7 @@ def cleanup_screenshot_provenance(provenance: Any) -> None:
     if not isinstance(root_value, str) or not root_value:
         return
     root = pathlib.Path(root_value)
-    if root.name != f"hypr-agent-portal-{os.getuid()}":
+    if root.name != f"brand-{os.getuid()}":
         return
 
     valid_directories: dict[pathlib.Path, tuple[int, int]] = {}
@@ -1031,7 +1031,7 @@ def consume_screenshot_result(info: dict[str, Any]) -> tuple[dict[str, Any], str
     try:
         data = info.pop("pngBase64")
         if not isinstance(data, str):
-            raise RuntimeError("hypr-agent-portalctl returned an invalid screenshot payload")
+            raise RuntimeError("brandctl returned an invalid screenshot payload")
         info.pop("sessionPath", None)
         info.pop("pngPath", None)
         return info, data
@@ -1230,14 +1230,14 @@ def mcp_snapshot_result(snapshot: dict[str, Any]) -> dict[str, Any]:
 
 
 def model_screenshot_resolution() -> str:
-    raw = normalize(os.environ.get("HYPR_AGENT_PORTAL_MODEL_RESOLUTION") or DEFAULT_MODEL_SCREENSHOT_RESOLUTION)
+    raw = normalize(os.environ.get("BRAND_MODEL_RESOLUTION") or DEFAULT_MODEL_SCREENSHOT_RESOLUTION)
     if raw in {"full", "native", "hidpi"}:
         return "full"
     return "logical"
 
 
 def model_screenshot_max_dimension() -> int:
-    raw = os.environ.get("HYPR_AGENT_PORTAL_MODEL_MAX_DIMENSION")
+    raw = os.environ.get("BRAND_MODEL_MAX_DIMENSION")
     if not raw:
         return 0
     try:
@@ -1517,7 +1517,7 @@ def list_apps_text(windows: list[dict[str, Any]]) -> str:
         if window.get("xwayland"):
             attrs.append("xwayland")
         lines.append(f"{name} -- {title} [{', '.join(attrs)}]")
-    return "\n".join(lines) if lines else "No running Hyprland apps are visible to hypr-agent-portal."
+    return "\n".join(lines) if lines else "No running Hyprland apps are visible to brand."
 
 
 def executable_basename(value: str) -> str:
@@ -2604,15 +2604,15 @@ def screenshot_state_root() -> pathlib.Path:
     if runtime and (base_info.st_uid != os.getuid() or stat.S_IMODE(base_info.st_mode) != 0o700):
         raise RuntimeError(f"XDG_RUNTIME_DIR must be owned by uid {os.getuid()} with mode 0700: {base}")
 
-    root = base / f"hypr-agent-portal-{os.getuid()}"
+    root = base / f"brand-{os.getuid()}"
     try:
         root_info = os.lstat(root)
     except FileNotFoundError:
         return root
     if stat.S_ISLNK(root_info.st_mode) or not stat.S_ISDIR(root_info.st_mode):
-        raise RuntimeError(f"hypr-agent-portal state root must be a real directory: {root}")
+        raise RuntimeError(f"brand state root must be a real directory: {root}")
     if root_info.st_uid != os.getuid() or stat.S_IMODE(root_info.st_mode) != 0o700:
-        raise RuntimeError(f"hypr-agent-portal state root must be owned by uid {os.getuid()} with mode 0700: {root}")
+        raise RuntimeError(f"brand state root must be owned by uid {os.getuid()} with mode 0700: {root}")
     return root
 
 
@@ -2660,7 +2660,7 @@ def agent_cursor_position() -> dict[str, Any] | None:
     root_info = os.fstat(root_fd)
     if not stat.S_ISDIR(root_info.st_mode) or root_info.st_uid != os.getuid() or stat.S_IMODE(root_info.st_mode) != 0o700:
         os.close(root_fd)
-        raise RuntimeError("refusing unsafe hypr-agent-portal state root")
+        raise RuntimeError("refusing unsafe brand state root")
     try:
         fd = os.open("cursor.json", os.O_RDONLY | os.O_CLOEXEC | getattr(os, "O_NOFOLLOW", 0), dir_fd=root_fd)
     except FileNotFoundError:
@@ -5383,7 +5383,7 @@ def tool_security_status(_: dict[str, Any]) -> dict[str, Any]:
     policy_state = SECURITY_POLICY.state()
     runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
     mutation_lease_path = (
-        str(pathlib.Path(runtime_dir) / "hypr-agent-portal" / "mutation.lock")
+        str(pathlib.Path(runtime_dir) / "brand" / "mutation.lock")
         if runtime_dir
         else ""
     )
@@ -5880,7 +5880,7 @@ def tool_manage_window(args: dict[str, Any]) -> dict[str, Any]:
         require_resulting_workspace_scope(options.get("workspace"), window)
     elif action == "minimize":
         enabled = options.get("enabled", True) is not False
-        destination = options.get("minimized_workspace", "special:hypr-agent-portal-minimized") if enabled else options.get("restore_workspace")
+        destination = options.get("minimized_workspace", "special:brand-minimized") if enabled else options.get("restore_workspace")
         if destination is None and SECURITY_POLICY.config.confinement.enabled:
             raise RuntimeError("restore_workspace is required under confinement")
         if destination is not None:
@@ -6827,7 +6827,7 @@ def resulting_scope_targets(action: str, args: dict[str, Any], source: WindowIde
             destination = args.get("workspace")
         elif operation in {"minimize", "restore"}:
             enabled = args.get("enabled", True) is not False and operation != "restore"
-            destination = args.get("minimized_workspace", "special:hypr-agent-portal-minimized") if enabled else args.get("restore_workspace")
+            destination = args.get("minimized_workspace", "special:brand-minimized") if enabled else args.get("restore_workspace")
             if destination is None and SECURITY_POLICY.config.confinement.enabled:
                 raise RuntimeError("restore_workspace is required under confinement")
     elif action == "manage_workspace":
@@ -7050,7 +7050,7 @@ def handle(message: dict[str, Any]) -> dict[str, Any] | None:
             req_id,
             {
                 "protocolVersion": "2025-06-18",
-                "serverInfo": {"name": "hypr-agent-portal", "version": SERVER_VERSION},
+                "serverInfo": {"name": "brand", "version": SERVER_VERSION},
                 "capabilities": {"tools": {"listChanged": False}},
             },
         )
@@ -7190,7 +7190,7 @@ def main() -> int:
         if is_sequence_call:
             with SEQUENCE_STATE_LOCK:
                 SEQUENCE_WORKER_PENDING = True
-            worker = threading.Thread(target=run_message, args=(msg,), name="hypr-agent-portal-sequence", daemon=False)
+            worker = threading.Thread(target=run_message, args=(msg,), name="brand-sequence", daemon=False)
             workers.append(worker)
             worker.start()
         else:

@@ -26,17 +26,17 @@ jobs:
       - name: Compile Python entry points and tests
         run: |
           python -m py_compile \
-            scripts/hypr-agent-portalctl \
-            scripts/hypr-agent-protalctl \
-            scripts/hypr-agent-portal-sandbox \
+            scripts/brandctl \
+            scripts/brandctl \
+            scripts/brand-sandbox \
             scripts/install-codex-cursor-asset \
             mcp/*.py \
             tests/*.py
       - name: Run Python tests
         run: |
           python tests/cursor_render.py
-          python tests/mcp_smoke.py mcp/hypr-agent-portal-mcp.py
-          python tests/mcp_smoke.py mcp/hypr-agent-protal-mcp.py
+          python tests/mcp_smoke.py mcp/brand-mcp.py
+          python tests/mcp_smoke.py mcp/brand-mcp.py
           python tests/mcp_geometry.py
           python tests/keyboard_routing.py
           python tests/mcp_security.py
@@ -83,14 +83,14 @@ jobs:
       - run: python -m twine check dist/*
       - name: Smoke-test installed wheel
         run: |
-          python -m venv /tmp/hypr-agent-portal-package-test
-          /tmp/hypr-agent-portal-package-test/bin/pip install --no-deps dist/*.whl
-          /tmp/hypr-agent-portal-package-test/bin/python \
+          python -m venv /tmp/brand-package-test
+          /tmp/brand-package-test/bin/pip install --no-deps dist/*.whl
+          /tmp/brand-package-test/bin/python \
             tests/mcp_smoke.py \
-            /tmp/hypr-agent-portal-package-test/bin/hypr-agent-portal
-          /tmp/hypr-agent-portal-package-test/bin/python \
+            /tmp/brand-package-test/bin/brand
+          /tmp/brand-package-test/bin/python \
             tests/mcp_smoke.py \
-            /tmp/hypr-agent-portal-package-test/bin/hypr-agent-protal-mcp.py
+            /tmp/brand-package-test/bin/brand-mcp.py
       - name: Smoke-test user-installed wheel outside PATH
         run: |
           package_userbase=$(mktemp -d)
@@ -100,7 +100,7 @@ jobs:
           env \
             PATH=/usr/bin:/bin \
             PYTHONUSERBASE="$package_userbase" \
-            "$package_python" tests/mcp_smoke.py "$package_userbase/bin/hypr-agent-portal"
+            "$package_python" tests/mcp_smoke.py "$package_userbase/bin/brand"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: python-package

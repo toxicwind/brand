@@ -23,7 +23,7 @@ def main() -> int:
                     "params": {
                         "protocolVersion": "2025-06-18",
                         "capabilities": {},
-                        "clientInfo": {"name": "hypr-agent-portal-smoke", "version": "0"},
+                        "clientInfo": {"name": "brand-smoke", "version": "0"},
                     },
                 }
             ),
@@ -53,7 +53,7 @@ def main() -> int:
         return proc.returncode or 1
 
     lines = [json.loads(line) for line in proc.stdout.splitlines() if line.strip()]
-    assert lines[0]["result"]["serverInfo"]["name"] == "hypr-agent-portal"
+    assert lines[0]["result"]["serverInfo"]["name"] == "brand"
     tools = lines[1]["result"]["tools"]
     tools_by_name = {tool["name"]: tool for tool in tools}
     expected_tools = {

@@ -33,7 +33,7 @@ DEFAULT_JOURNAL_MAX_BYTES = 16 * 1024 * 1024
 DEFAULT_JOURNAL_BACKUPS = 2
 _MAX_CONFIGURED_JOURNAL_BYTES = 1024 * 1024 * 1024
 _MAX_CONFIGURED_JOURNAL_BACKUPS = 16
-_APPLICATION_DIR = "hypr-agent-portal"
+_APPLICATION_DIR = "brand"
 _MAX_SUMMARY_ITEMS = 64
 _MAX_SUMMARY_TEXT = 512
 
@@ -488,12 +488,12 @@ class AuditJournal:
         self.session_id = session_id or str(uuid.uuid4())
         self.store_sensitive_plaintext = store_sensitive_plaintext
         configured_max = os.environ.get(
-            "HYPR_AGENT_PORTAL_SECURITY_AUDIT_MAX_BYTES",
-            os.environ.get("HYPR_AGENT_PORTAL_AUDIT_MAX_BYTES", str(DEFAULT_JOURNAL_MAX_BYTES)),
+            "BRAND_SECURITY_AUDIT_MAX_BYTES",
+            os.environ.get("BRAND_AUDIT_MAX_BYTES", str(DEFAULT_JOURNAL_MAX_BYTES)),
         )
         configured_backups = os.environ.get(
-            "HYPR_AGENT_PORTAL_SECURITY_AUDIT_BACKUPS",
-            os.environ.get("HYPR_AGENT_PORTAL_AUDIT_BACKUPS", str(DEFAULT_JOURNAL_BACKUPS)),
+            "BRAND_SECURITY_AUDIT_BACKUPS",
+            os.environ.get("BRAND_AUDIT_BACKUPS", str(DEFAULT_JOURNAL_BACKUPS)),
         )
         self.max_bytes = int(configured_max) if max_bytes is None else int(max_bytes)
         self.backup_count = int(configured_backups) if backup_count is None else int(backup_count)

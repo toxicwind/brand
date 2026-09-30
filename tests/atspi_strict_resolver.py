@@ -8,11 +8,11 @@ import pathlib
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-MCP = ROOT / "mcp" / "hypr-agent-portal-mcp.py"
+MCP = ROOT / "mcp" / "brand-mcp.py"
 
 
 def load_mcp():
-    spec = importlib.util.spec_from_file_location("hypr_agent_portal_mcp_atspi_strict", MCP)
+    spec = importlib.util.spec_from_file_location("brand_mcp_atspi_strict", MCP)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)

@@ -1,39 +1,39 @@
-# hypr-agent-portal
+# brand
 
 ##Since CUA have announced support for Omarchy/Hypeland, This project is no longer required by the world and people. So it been arcchived.
 
-hypr-agent-portal is an experimental Hyprland plugin plus MCP bridge for background agent control.
+brand is an experimental Hyprland plugin plus MCP bridge for background agent control.
 
 It exposes a set of compositor dispatchers. With the legacy hyprlang config provider
 they can be called with the normal dispatcher syntax:
 
 ```ini
-hyprctl dispatch hypr-agent-portal:screenshot /tmp/hypr-agent-portal-session.json
-hyprctl dispatch hypr-agent-portal:screenshot '/tmp/hypr-agent-portal-session.json,address:0x1234'
-hyprctl dispatch hypr-agent-portal:pointer 'address:0x1234,930,520,click,left'
-hyprctl dispatch hypr-agent-portal:pointer 'address:0x1234,930,520,drag,left,1180,760,0.2'
-hyprctl dispatch hypr-agent-portal:indicator 'address:0x1234,930,520,type'
-hyprctl dispatch hypr-agent-portal:keyboard 'address:0x1234,tap,v,ctrl'
-hyprctl dispatch hypr-agent-portal:session 'begin,address:0x1234'
-hyprctl dispatch hypr-agent-portal:panic status
+hyprctl dispatch brand:screenshot /tmp/brand-session.json
+hyprctl dispatch brand:screenshot '/tmp/brand-session.json,address:0x1234'
+hyprctl dispatch brand:pointer 'address:0x1234,930,520,click,left'
+hyprctl dispatch brand:pointer 'address:0x1234,930,520,drag,left,1180,760,0.2'
+hyprctl dispatch brand:indicator 'address:0x1234,930,520,type'
+hyprctl dispatch brand:keyboard 'address:0x1234,tap,v,ctrl'
+hyprctl dispatch brand:session 'begin,address:0x1234'
+hyprctl dispatch brand:panic status
 ```
 
 With the Lua config provider, `hyprctl dispatch` evaluates its argument as a Lua
 dispatcher expression. Use the Lua plugin functions instead:
 
 ```sh
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.screenshot("/tmp/hypr-agent-portal-session.json")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.screenshot("/tmp/hypr-agent-portal-session.json,address:0x1234")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.pointer("address:0x1234,930,520,click,left")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.pointer("address:0x1234,930,520,drag,left,1180,760,0.2")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.indicator("address:0x1234,930,520,type")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.keyboard("address:0x1234,tap,v,ctrl")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.session("begin,address:0x1234")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.panic("status")'
-hyprctl dispatch 'hl.plugin.hypr_agent_portal.approval("status 0123456789abcdef0123456789abcdef")'
+hyprctl dispatch 'hl.plugin.brand.screenshot("/tmp/brand-session.json")'
+hyprctl dispatch 'hl.plugin.brand.screenshot("/tmp/brand-session.json,address:0x1234")'
+hyprctl dispatch 'hl.plugin.brand.pointer("address:0x1234,930,520,click,left")'
+hyprctl dispatch 'hl.plugin.brand.pointer("address:0x1234,930,520,drag,left,1180,760,0.2")'
+hyprctl dispatch 'hl.plugin.brand.indicator("address:0x1234,930,520,type")'
+hyprctl dispatch 'hl.plugin.brand.keyboard("address:0x1234,tap,v,ctrl")'
+hyprctl dispatch 'hl.plugin.brand.session("begin,address:0x1234")'
+hyprctl dispatch 'hl.plugin.brand.panic("status")'
+hyprctl dispatch 'hl.plugin.brand.approval("status 0123456789abcdef0123456789abcdef")'
 ```
 
-`scripts/hypr-agent-portalctl` detects `configProvider: lua` and emits the Lua
+`scripts/brandctl` detects `configProvider: lua` and emits the Lua
 dispatcher expression automatically.
 
 The screenshot dispatcher renders active monitor workspaces into RGBA artifacts from inside Hyprland, then writes a JSON session file. When a window selector is supplied, it renders that window directly into an offscreen framebuffer, so the artifact is not occluded by other windows. On Hyprland v0.56, the pointer dispatcher resolves targets through `Desktop::viewState()->query()`, focuses the target surface only for the injected pointer events, sends motion/button/frame events through `g_pSeatManager`, then restores the previous pointer focus. Successful background pointer actions also render a non-interactive Codex-style cursor overlay with the target window's render pass, so it appears on the controlled app when that app is visible instead of being drawn as a global topmost layer.
@@ -44,7 +44,7 @@ The keyboard dispatcher sends a transactional enter/key/leave sequence directly 
 
 XWayland applications share one X input focus, so they use a short compatibility lease instead of the fully isolated native path. Repeated agent keys extend that lease, while any real compositor keyboard event restores the previous X focus before the physical key is delivered. The MCP text path first uses AT-SPI when the target snapshot identifies a focused editable control, then falls back to the resource-level key or clipboard lanes.
 
-For apps that spawn visible helper windows or dialogs during background control, `hypr-agent-portal:session begin,<target>` records the target window workspace. New same-process related windows opened during the session are moved back to that workspace instead of appearing on the agent's current workspace. Paste actions begin and sync this session automatically; if a paste opens a related dialog, the MCP result and the next `get_app_state` output include the dialog's `address:0x...` target so the agent can operate that dialog before returning to the root window.
+For apps that spawn visible helper windows or dialogs during background control, `brand:session begin,<target>` records the target window workspace. New same-process related windows opened during the session are moved back to that workspace instead of appearing on the agent's current workspace. Paste actions begin and sync this session automatically; if a paste opens a related dialog, the MCP result and the next `get_app_state` output include the dialog's `address:0x...` target so the agent can operate that dialog before returning to the root window.
 
 ## Build
 
@@ -60,11 +60,11 @@ PKG_CONFIG_PATH="$HOME/data/Hyprland/build${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
 cmake --build build-v056
 ```
 
-Install or load `build/libhypr-agent-portal.so` as a Hyprland plugin. With hyprpm:
+Install or load `build/libbrand.so` as a Hyprland plugin. With hyprpm:
 
 ```sh
 hyprpm add .
-hyprpm enable hypr-agent-portal
+hyprpm enable brand
 hyprpm reload
 ```
 
@@ -73,7 +73,7 @@ hyprpm reload
 The repository includes a Codex plugin manifest and a stdio MCP server:
 
 ```sh
-python3 mcp/hypr-agent-portal-mcp.py
+python3 mcp/brand-mcp.py
 ```
 
 The core bridge uses the Python standard library. Visual transforms and local
@@ -116,7 +116,7 @@ These objects correspond respectively to `screenshot`, `ocr`, `click_text`,
 
 Recommended agent workflow:
 
-1. If the user explicitly asks for `hypr-agent-portal`, do not use Browser MCP
+1. If the user explicitly asks for `brand`, do not use Browser MCP
    or the old `hyprcum` namespace.
 2. Unless the user explicitly asks to open, launch, create, or use a new
    app/window/instance, call `list_apps` first and select an existing matching
@@ -147,7 +147,7 @@ Recommended agent workflow:
    element's visible screenshot center and native pointer input by default, so
    they behave like real background clicks and show the visible agent cursor.
    Set `element_click_mode=auto` or
-   `HYPR_AGENT_PORTAL_ELEMENT_CLICK_MODE=auto` only when you intentionally want
+   `BRAND_ELEMENT_CLICK_MODE=auto` only when you intentionally want
    to try AT-SPI action activation before the pointer fallback. When
    coordinates are needed, use `coordinate_space=screenshot` with screenshot pixels, or
    `coordinate_space=window` with target-window-relative logical coordinates.
@@ -193,8 +193,8 @@ coordinates only when the accessibility tree is missing or ambiguous.
 
 The visible agent cursor is a compositor-side indicator, not a side effect of
 moving the real pointer. Pointer actions update it through
-`hypr-agent-portal:pointer`; semantic AT-SPI, keyboard, and text actions update
-the same indicator through `hypr-agent-portal:indicator` before acting, so users
+`brand:pointer`; semantic AT-SPI, keyboard, and text actions update
+the same indicator through `brand:indicator` before acting, so users
 can see which app/region the agent is controlling regardless of the input
 backend.
 
@@ -219,7 +219,7 @@ The MCP server exposes the compatibility tool `computer` plus Codex-style app-st
   surviving `related_to` root state.
 - Action mismatch warnings: when an element click opens a related popup/dialog whose title does not match the clicked element text, the returned state includes `ACTION WARNING`, `attention.type=action-opened-unexpected-window`, and the clicked/opened details. Agents should refresh and recover from the actual UI state instead of continuing the assumed workflow.
 - `get_cursor_position`: returns the current agent or compositor cursor in monitor-relative coordinates, and in screenshot/window-relative coordinates when `app` is supplied.
-- `click`, `scroll`, `drag`, `type_text`, `paste_text`, `press_key`, `set_value`, `perform_secondary_action`, `activate_menu_item`: operate on the last app-state snapshot by `element_index` or `menu_index` where possible, and fall back to screenshot/window-relative coordinates plus the native background input dispatchers. For `click`, `element_index` is converted to the visible element center and sent through native pointer input by default. Use `element_click_mode=auto` or `HYPR_AGENT_PORTAL_ELEMENT_CLICK_MODE=auto` to try AT-SPI activation before pointer fallback, or `element_click_mode=atspi` to require AT-SPI activation. Use `paste_text` for bulk text and datasets; on grid/table targets it exits cell edit mode before pasting so tabular text can expand into cells. `type_text` is for short literal typing and accepts `method=auto`, `paste`, `keys`, or explicit `atspi`.
+- `click`, `scroll`, `drag`, `type_text`, `paste_text`, `press_key`, `set_value`, `perform_secondary_action`, `activate_menu_item`: operate on the last app-state snapshot by `element_index` or `menu_index` where possible, and fall back to screenshot/window-relative coordinates plus the native background input dispatchers. For `click`, `element_index` is converted to the visible element center and sent through native pointer input by default. Use `element_click_mode=auto` or `BRAND_ELEMENT_CLICK_MODE=auto` to try AT-SPI activation before pointer fallback, or `element_click_mode=atspi` to require AT-SPI activation. Use `paste_text` for bulk text and datasets; on grid/table targets it exits cell edit mode before pasting so tabular text can expand into cells. `type_text` is for short literal typing and accepts `method=auto`, `paste`, `keys`, or explicit `atspi`.
 - Local visual targeting: `ocr` returns text, normalized confidence, and
   screenshot-coordinate boxes from `tesseract-cli` or `pytesseract` together
   with an opaque `ocr_id`. `click_text` selects an exact or substring match by
@@ -247,7 +247,7 @@ The MCP server exposes the compatibility tool `computer` plus Codex-style app-st
   focus, close, move, resize, maximize, fullscreen, floating, pin, workspace
   move, and inverse operations. Hyprland has no portable minimize primitive, so
   minimize is simulated by moving the window to the private
-  `special:hypr-agent-portal-minimized` workspace and recording its origin for
+  `special:brand-minimized` workspace and recording its origin for
   restore. `list_workspaces` and `manage_workspace` list, switch,
   create-or-activate, rename, move a targeted window, and show/hide/toggle
   `special:` workspaces without treating a special workspace as an ordinary
@@ -270,17 +270,17 @@ launch profiles include:
 
 ```sh
 # Observation only: mutating tools are hidden and computer exposes only reads.
-HYPR_AGENT_PORTAL_READONLY=1 python3 mcp/hypr-agent-portal-mcp.py
+BRAND_READONLY=1 python3 mcp/brand-mcp.py
 
 # Validate calls and return structured decisions without executing mutations.
-HYPR_AGENT_PORTAL_DRYRUN=1 python3 mcp/hypr-agent-portal-mcp.py
+BRAND_DRYRUN=1 python3 mcp/brand-mcp.py
 
 # Restrict mutations to launched windows, Firefox classes, or workspace 3.
-HYPR_AGENT_PORTAL_CONFINE='launched,class:firefox*,workspace:3' \
-  python3 mcp/hypr-agent-portal-mcp.py
+BRAND_CONFINE='launched,class:firefox*,workspace:3' \
+  python3 mcp/brand-mcp.py
 ```
 
-The long-form `HYPR_AGENT_PORTAL_SECURITY_*` variables are the canonical
+The long-form `BRAND_SECURITY_*` variables are the canonical
 configuration surface. Common settings are:
 
 - `DEFAULT_AUTHORIZATION=view|click|full` and
@@ -303,9 +303,9 @@ configuration surface. Common settings are:
   records are reclaimed before the fail-closed total and per-owner limits are
   checked. The MCP additionally
   takes a non-blocking cross-process lease under the private
-  `$XDG_RUNTIME_DIR/hypr-agent-portal` directory for every mutation.
+  `$XDG_RUNTIME_DIR/brand` directory for every mutation.
 
-Prefix each long-form name with `HYPR_AGENT_PORTAL_SECURITY_`. Short aliases
+Prefix each long-form name with `BRAND_SECURITY_`. Short aliases
 are provided for `READONLY`, `DRYRUN`, `CONFINE`, `APP_POLICIES`, `CLIPBOARD`,
 and `PRIVACY_CLASSES`; canonical variables win when both are set.
 
@@ -342,23 +342,23 @@ payload-bound. Pending and approved records live in a current-user private
 directory below `$XDG_RUNTIME_DIR`; symlinked or permissive directories and
 files are rejected.
 
-Set `HYPR_AGENT_PORTAL_SECURITY_AUDIT=1` to enable a private mode-0600 JSONL
+Set `BRAND_SECURITY_AUDIT=1` to enable a private mode-0600 JSONL
 journal below the user state directory. Text, clipboard data, tokens, paths,
 and other sensitive values are replaced by digests. `audit_replay` defaults to
 plan-only and rejects stale targets, ephemeral element indices, redacted
 payloads, and clipboard actions unless explicitly allowed. Journals rotate at
 16 MiB with two same-directory mode-0600 backups by default. Bound these with
-`HYPR_AGENT_PORTAL_SECURITY_AUDIT_MAX_BYTES` (1 byte to 1 GiB) and
-`HYPR_AGENT_PORTAL_SECURITY_AUDIT_BACKUPS` (0 to 16); zero backups makes a full
+`BRAND_SECURITY_AUDIT_MAX_BYTES` (1 byte to 1 GiB) and
+`BRAND_SECURITY_AUDIT_BACKUPS` (0 to 16); zero backups makes a full
 journal fail closed instead of truncating it.
 
 The native panic path is independent of MCP policy:
 
 ```sh
-scripts/hypr-agent-portalctl panic panic   # cancel and latch mutations off
-scripts/hypr-agent-portalctl panic cancel  # cancel current async work only
-scripts/hypr-agent-portalctl panic status
-scripts/hypr-agent-portalctl panic resume  # clear latch; treat as high risk
+scripts/brandctl panic panic   # cancel and latch mutations off
+scripts/brandctl panic cancel  # cancel current async work only
+scripts/brandctl panic status
+scripts/brandctl panic resume  # clear latch; treat as high risk
 ```
 
 `cancel` is one-shot: after cancelling the current asynchronous pointer work,
@@ -366,7 +366,7 @@ timer, and XWayland lease, later mutations may proceed. `panic` performs the
 same cancellation and latches mutations off until a physically confirmed
 `resume` passes the high-risk confirmation flow above.
 
-For disposable integration runs, `scripts/hypr-agent-portal-sandbox doctor`
+For disposable integration runs, `scripts/brand-sandbox doctor`
 checks nested/headless prerequisites and `run -- ...` creates isolated
 HOME/XDG/DBus state. This is process/config isolation, not a privilege or
 network security sandbox.
@@ -376,8 +376,8 @@ The app-state coordinate contract hides Hyprland global logical coordinates from
 Screenshots returned to MCP clients are downsampled for model use by default to
 the compositor logical resolution, removing HiDPI scaling. On a 2x display, a
 `2862x1686` target capture is sent as `1431x843`. Set
-`HYPR_AGENT_PORTAL_MODEL_RESOLUTION=full` to return full HiDPI resolution. An
-optional `HYPR_AGENT_PORTAL_MODEL_MAX_DIMENSION` value can apply an additional
+`BRAND_MODEL_RESOLUTION=full` to return full HiDPI resolution. An
+optional `BRAND_MODEL_MAX_DIMENSION` value can apply an additional
 long-edge cap after logical downsampling. `get_app_state` reports the model
 image size in `screenshot.width` and `screenshot.height`, and keeps the original
 capture size in `sourceWidth/sourceHeight`. Screenshot coordinates always refer
@@ -475,21 +475,21 @@ The compatibility `computer` tool still exposes these lower-level actions:
 The command-line bridge is also usable directly:
 
 ```sh
-scripts/hypr-agent-portalctl screenshot --base64
-scripts/hypr-agent-portalctl screenshot --target 'address:0x1234' --base64
-scripts/hypr-agent-portalctl screenshot --target 'address:0x1234' --base64 --model-resolution logical
-scripts/hypr-agent-portalctl screenshot --cursor-source agent --base64
-scripts/hypr-agent-portalctl windows
-scripts/hypr-agent-portalctl windows --related-to 'address:0x1234'
-scripts/hypr-agent-portalctl pointer 'address:0x1234' 930 520 click left
-scripts/hypr-agent-portalctl pointer 'address:0x1234' 930 520 scroll -3
-scripts/hypr-agent-portalctl pointer 'address:0x1234' 930 520 drag left 1180 760 --duration 0.2
-scripts/hypr-agent-portalctl indicator 'address:0x1234' 930 520 type
-scripts/hypr-agent-portalctl keyboard 'address:0x1234' tap v ctrl
-scripts/hypr-agent-portalctl keyboard 'address:0x1234' tap 28
-scripts/hypr-agent-portalctl session begin 'address:0x1234'
-scripts/hypr-agent-portalctl session end 'address:0x1234'
-scripts/hypr-agent-portalctl panic status
+scripts/brandctl screenshot --base64
+scripts/brandctl screenshot --target 'address:0x1234' --base64
+scripts/brandctl screenshot --target 'address:0x1234' --base64 --model-resolution logical
+scripts/brandctl screenshot --cursor-source agent --base64
+scripts/brandctl windows
+scripts/brandctl windows --related-to 'address:0x1234'
+scripts/brandctl pointer 'address:0x1234' 930 520 click left
+scripts/brandctl pointer 'address:0x1234' 930 520 scroll -3
+scripts/brandctl pointer 'address:0x1234' 930 520 drag left 1180 760 --duration 0.2
+scripts/brandctl indicator 'address:0x1234' 930 520 type
+scripts/brandctl keyboard 'address:0x1234' tap v ctrl
+scripts/brandctl keyboard 'address:0x1234' tap 28
+scripts/brandctl session begin 'address:0x1234'
+scripts/brandctl session end 'address:0x1234'
+scripts/brandctl panic status
 ```
 
 ## Known Issues
@@ -510,7 +510,7 @@ scripts/hypr-agent-portalctl panic status
 
 ```ini
 plugin {
-  hypr-agent-portal {
+  brand {
     allow_screenshot = 1
     allow_pointer = 1
     allow_keyboard = 1
@@ -523,18 +523,18 @@ plugin {
     cancel_on_human_input = 1
     # Comma-separated class glob patterns hidden from targeted screenshots.
     privacy_class_denylist = org.keepassxc.KeePassXC,1Password
-    # cursor_texture_path = ~/.config/hypr-agent-portal/codex-cursor-252.abgr
+    # cursor_texture_path = ~/.config/brand/codex-cursor-252.abgr
   }
 }
 ```
 
 With Hyprland Lua config, plugin config keys are written under
-`plugin.hypr_agent_portal` because Lua normalizes the plugin namespace:
+`plugin.brand` because Lua normalizes the plugin namespace:
 
 ```lua
 hl.config({
   plugin = {
-    hypr_agent_portal = {
+    brand = {
       allow_screenshot = true,
       allow_pointer = true,
       allow_keyboard = true,
@@ -544,13 +544,13 @@ hl.config({
       keyboard_restore_delay_ms = 700,
       cancel_on_human_input = true,
       privacy_class_denylist = "org.keepassxc.KeePassXC,1Password",
-      -- cursor_texture_path = "~/.config/hypr-agent-portal/codex-cursor-252.abgr",
+      -- cursor_texture_path = "~/.config/brand/codex-cursor-252.abgr",
     },
   },
 })
 ```
 
-The visible cursor uses `~/.config/hypr-agent-portal/codex-cursor-252.abgr` when present, and otherwise falls back to a procedural texture. Install an extracted Codex Computer Use cursor PNG into that local raw format with:
+The visible cursor uses `~/.config/brand/codex-cursor-252.abgr` when present, and otherwise falls back to a procedural texture. Install an extracted Codex Computer Use cursor PNG into that local raw format with:
 
 ```sh
 scripts/install-codex-cursor-asset
@@ -559,7 +559,7 @@ scripts/install-codex-cursor-asset
 ## Rename compatibility
 
 The corrected `portal` spelling is canonical. For one release, the old
-`hypr-agent-protal:*` dispatchers, Lua namespace, config namespace, MCP/CLI
+`brand:*` dispatchers, Lua namespace, config namespace, MCP/CLI
 launchers, HyprPM plugin entry, and existing `HYPR_AGENT_PROTAL_*` runtime
 variables remain compatibility aliases. New names take precedence; do not
 enable both HyprPM entries. The compatibility aliases are deprecated and will
@@ -567,5 +567,5 @@ be removed in a later release.
 
 ## License
 
-hypr-agent-portal is licensed under the GNU General Public License, version 3
+brand is licensed under the GNU General Public License, version 3
 only (`GPL-3.0-only`). See [LICENSE](LICENSE).

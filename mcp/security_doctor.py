@@ -1,4 +1,4 @@
-"""Security-readiness diagnostics for hypr-agent-portal.
+"""Security-readiness diagnostics for brand.
 
 The module deliberately has no dependency on the MCP server and performs no
 subprocess calls.  Runtime-specific facts (most notably panic-dispatcher and
@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 
-ENV_PREFIX = "HYPR_AGENT_PORTAL_"
+ENV_PREFIX = "BRAND_"
 
 _ENV_NAMES: dict[str, tuple[str, ...]] = {
     "readonly": ("READONLY", "READ_ONLY"),
@@ -151,7 +151,7 @@ def _lockscreen_status(
             return False, f"probe failed: {type(exc).__name__}: {exc}"
 
     locked_variables = (
-        "HYPR_AGENT_PORTAL_SESSION_LOCKED",
+        "BRAND_SESSION_LOCKED",
         "XDG_SESSION_LOCKED",
         "SESSION_LOCKED",
     )

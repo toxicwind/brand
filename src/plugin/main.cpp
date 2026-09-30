@@ -122,17 +122,17 @@ struct SPluginConfig {
 
 SPluginConfig g_config;
 
-constexpr const char* LUA_CONFIG_ALLOW_POINTER             = "plugin.hypr_agent_portal.allow_pointer";
-constexpr const char* LUA_CONFIG_ALLOW_KEYBOARD            = "plugin.hypr_agent_portal.allow_keyboard";
-constexpr const char* LUA_CONFIG_ALLOW_SCREENSHOT          = "plugin.hypr_agent_portal.allow_screenshot";
-constexpr const char* LUA_CONFIG_ALLOW_SESSION             = "plugin.hypr_agent_portal.allow_session";
-constexpr const char* LUA_CONFIG_SHOW_INDICATOR            = "plugin.hypr_agent_portal.show_indicator";
-constexpr const char* LUA_CONFIG_INDICATOR_TIMEOUT_MS      = "plugin.hypr_agent_portal.indicator_timeout_ms";
-constexpr const char* LUA_CONFIG_KEYBOARD_RESTORE_DELAY_MS = "plugin.hypr_agent_portal.keyboard_restore_delay_ms";
-constexpr const char* LUA_CONFIG_CANCEL_ON_HUMAN_INPUT     = "plugin.hypr_agent_portal.cancel_on_human_input";
-constexpr const char* LUA_CONFIG_CURSOR_TEXTURE_PATH       = "plugin.hypr_agent_portal.cursor_texture_path";
-constexpr const char* LUA_CONFIG_PRIVACY_CLASS_DENYLIST    = "plugin.hypr_agent_portal.privacy_class_denylist";
-constexpr const char* LUA_PLUGIN_NAMESPACE                 = "hypr_agent_portal";
+constexpr const char* LUA_CONFIG_ALLOW_POINTER             = "plugin.brand.allow_pointer";
+constexpr const char* LUA_CONFIG_ALLOW_KEYBOARD            = "plugin.brand.allow_keyboard";
+constexpr const char* LUA_CONFIG_ALLOW_SCREENSHOT          = "plugin.brand.allow_screenshot";
+constexpr const char* LUA_CONFIG_ALLOW_SESSION             = "plugin.brand.allow_session";
+constexpr const char* LUA_CONFIG_SHOW_INDICATOR            = "plugin.brand.show_indicator";
+constexpr const char* LUA_CONFIG_INDICATOR_TIMEOUT_MS      = "plugin.brand.indicator_timeout_ms";
+constexpr const char* LUA_CONFIG_KEYBOARD_RESTORE_DELAY_MS = "plugin.brand.keyboard_restore_delay_ms";
+constexpr const char* LUA_CONFIG_CANCEL_ON_HUMAN_INPUT     = "plugin.brand.cancel_on_human_input";
+constexpr const char* LUA_CONFIG_CURSOR_TEXTURE_PATH       = "plugin.brand.cursor_texture_path";
+constexpr const char* LUA_CONFIG_PRIVACY_CLASS_DENYLIST    = "plugin.brand.privacy_class_denylist";
+constexpr const char* LUA_PLUGIN_NAMESPACE                 = "brand";
 constexpr const char* LUA_PLUGIN_NAMESPACE_COMPAT          = "hypr_agent_protal";
 constexpr const char* LUA_COMPAT_ALLOW_POINTER             = "plugin.hypr_agent_protal.allow_pointer";
 constexpr const char* LUA_COMPAT_ALLOW_KEYBOARD            = "plugin.hypr_agent_protal.allow_keyboard";
@@ -181,8 +181,8 @@ T legacyConfigValue(const std::string& name, T fallback) {
 
 template <typename T>
 T legacyCompatConfigValue(const std::string& suffix, T fallback) {
-    const auto current = legacyConfigValue<T>("plugin:hypr-agent-portal:" + suffix, fallback);
-    const auto compat = legacyConfigValue<T>("plugin:hypr-agent-protal:" + suffix, fallback);
+    const auto current = legacyConfigValue<T>("plugin:brand:" + suffix, fallback);
+    const auto compat = legacyConfigValue<T>("plugin:brand:" + suffix, fallback);
     return current != fallback ? current : compat;
 }
 
@@ -239,8 +239,8 @@ std::string configString(const std::string& suffix, const std::string& fallback)
                 return {};
             }
         };
-        const auto current = read("plugin:hypr-agent-portal:");
-        const auto compat = read("plugin:hypr-agent-protal:");
+        const auto current = read("plugin:brand:");
+        const auto compat = read("plugin:brand:");
         if (suffix == "privacy_class_denylist" && !current.empty() && !compat.empty())
             return current + "," + compat;
         return !current.empty() ? current : (!compat.empty() ? compat : fallback);
@@ -266,8 +266,8 @@ std::string configString(const std::string& suffix, const std::string& fallback)
 void registerPluginConfig() {
     if (usingLegacyConfig()) {
         const auto addBoth = [](const std::string& suffix, const auto& value) {
-            HyprlandAPI::addConfigValue(g_pluginHandle, "plugin:hypr-agent-portal:" + suffix, value);
-            HyprlandAPI::addConfigValue(g_pluginHandle, "plugin:hypr-agent-protal:" + suffix, value);
+            HyprlandAPI::addConfigValue(g_pluginHandle, "plugin:brand:" + suffix, value);
+            HyprlandAPI::addConfigValue(g_pluginHandle, "plugin:brand:" + suffix, value);
         };
         addBoth("allow_pointer", Hyprlang::INT{1});
         addBoth("allow_keyboard", Hyprlang::INT{1});
@@ -343,9 +343,9 @@ void registerPluginConfig() {
 
 std::filesystem::path defaultCursorTexturePath() {
     if (const char* xdgConfig = std::getenv("XDG_CONFIG_HOME"); xdgConfig && *xdgConfig)
-        return std::filesystem::path{xdgConfig} / "hypr-agent-portal" / "codex-cursor-252.abgr";
+        return std::filesystem::path{xdgConfig} / "brand" / "codex-cursor-252.abgr";
     if (const char* home = std::getenv("HOME"); home && *home)
-        return std::filesystem::path{home} / ".config" / "hypr-agent-portal" / "codex-cursor-252.abgr";
+        return std::filesystem::path{home} / ".config" / "brand" / "codex-cursor-252.abgr";
     return {};
 }
 
@@ -1267,11 +1267,11 @@ bool keyboardGrabActive() {
 
 std::optional<std::string> inputSafetyError(const TargetSurface& target) {
     if (compositorSessionLocked())
-        return "hypr-agent-portal input is blocked while the compositor session is locked";
+        return "brand input is blocked while the compositor session is locked";
     if (g_pSeatManager && g_pSeatManager->m_seatGrab && !g_pSeatManager->m_seatGrab->accepts(target.surface))
-        return "hypr-agent-portal input is blocked by an active seat grab";
+        return "brand input is blocked by an active seat grab";
     if (exclusiveLayerSurfaceActive())
-        return "hypr-agent-portal input is blocked by an exclusive layer surface";
+        return "brand input is blocked by an exclusive layer surface";
     return std::nullopt;
 }
 
@@ -2122,16 +2122,16 @@ void sendPointerScroll(double dx, double dy) {
 
 SDispatchResult dispatchPointerWithMode(const std::string& args, bool windowRelative) {
     if (g_agentPanicActive)
-        return {.success = false, .error = "hypr-agent-portal panic is active"};
+        return {.success = false, .error = "brand panic is active"};
     if (!configBool("allow_pointer", true))
-        return {.success = false, .error = "hypr-agent-portal pointer dispatch is disabled"};
+        return {.success = false, .error = "brand pointer dispatch is disabled"};
     if (!g_pSeatManager)
         return {.success = false, .error = "seat manager is not ready"};
 
     const auto parts = splitCsv(args);
     if (parts.size() < 4)
         return {.success = false,
-                .error = "usage: hypr-agent-portal:pointer <window-regex>,<x>,<y>,<move|click|press|release|drag>[,<button>][,<drag-x>,<drag-y>,<duration-sec>]"};
+                .error = "usage: brand:pointer <window-regex>,<x>,<y>,<move|click|press|release|drag>[,<button>][,<drag-x>,<drag-y>,<duration-sec>]"};
 
     const auto x = parseDouble(parts[1]);
     const auto y = parseDouble(parts[2]);
@@ -2417,7 +2417,7 @@ SDispatchResult dispatchIndicator(const std::string& args) {
 
     const auto parts = splitCsv(args);
     if (parts.size() < 3)
-        return {.success = false, .error = "usage: hypr-agent-portal:indicator <window-regex>,<global-x>,<global-y>[,<action>]"};
+        return {.success = false, .error = "usage: brand:indicator <window-regex>,<global-x>,<global-y>[,<action>]"};
 
     const auto x = parseDouble(parts[1]);
     const auto y = parseDouble(parts[2]);
@@ -2437,15 +2437,15 @@ SDispatchResult dispatchIndicator(const std::string& args) {
 
 SDispatchResult dispatchKeyboard(const std::string& args) {
     if (g_agentPanicActive)
-        return {.success = false, .error = "hypr-agent-portal panic is active"};
+        return {.success = false, .error = "brand panic is active"};
     if (!configBool("allow_keyboard", true))
-        return {.success = false, .error = "hypr-agent-portal keyboard dispatch is disabled"};
+        return {.success = false, .error = "brand keyboard dispatch is disabled"};
     if (!g_pSeatManager)
         return {.success = false, .error = "seat manager is not ready"};
 
     const auto parts = splitCsv(args);
     if (parts.size() < 3)
-        return {.success = false, .error = "usage: hypr-agent-portal:keyboard <window-regex>,<tap|press|release>,<key>[,<modifiers>][,<global-x>,<global-y>]"};
+        return {.success = false, .error = "usage: brand:keyboard <window-regex>,<tap|press|release>,<key>[,<modifiers>][,<global-x>,<global-y>]"};
 
     std::optional<TargetSurface> target;
     std::optional<Vector2D>      indicatorGlobal;
@@ -2547,14 +2547,14 @@ SDispatchResult dispatchKeyboard(const std::string& args) {
 
 SDispatchResult dispatchScreenshot(const std::string& args) {
     if (compositorSessionLocked())
-        return {.success = false, .error = "hypr-agent-portal screenshot is blocked while the compositor session is locked"};
+        return {.success = false, .error = "brand screenshot is blocked while the compositor session is locked"};
     if (!configBool("allow_screenshot", true))
-        return {.success = false, .error = "hypr-agent-portal screenshot dispatch is disabled"};
+        return {.success = false, .error = "brand screenshot dispatch is disabled"};
 
     const auto parts = splitCsv(args);
     const auto path = parts.empty() ? std::string{} : trim(parts[0]);
     if (path.empty())
-        return {.success = false, .error = "usage: hypr-agent-portal:screenshot <output-session-json-path>[,<window-regex>]"};
+        return {.success = false, .error = "usage: brand:screenshot <output-session-json-path>[,<window-regex>]"};
 
     const auto target = parts.size() >= 2 ? trim(parts[1]) : std::string{};
     PHLWINDOW  targetWindow;
@@ -2576,7 +2576,7 @@ SDispatchResult dispatchScreenshot(const std::string& args) {
             return {.success = false,
                     .error = "full-compositor screenshot is blocked while a mapped privacy_class_denylist window could enter capture metadata"};
     }
-    const auto result = hypr_agent_portal::captureScreenshotSession(std::filesystem::path(path), targetWindow);
+    const auto result = brand::captureScreenshotSession(std::filesystem::path(path), targetWindow);
     if (!result.success)
         return {.success = false, .error = result.error};
     return {.success = true};
@@ -2584,17 +2584,17 @@ SDispatchResult dispatchScreenshot(const std::string& args) {
 
 SDispatchResult dispatchSession(const std::string& args) {
     if (g_agentPanicActive)
-        return {.success = false, .error = "hypr-agent-portal panic is active"};
+        return {.success = false, .error = "brand panic is active"};
     if (compositorSessionLocked())
-        return {.success = false, .error = "hypr-agent-portal session dispatch is blocked while the compositor session is locked"};
+        return {.success = false, .error = "brand session dispatch is blocked while the compositor session is locked"};
     if (!configBool("allow_session", true))
-        return {.success = false, .error = "hypr-agent-portal session dispatch is disabled"};
+        return {.success = false, .error = "brand session dispatch is disabled"};
     if (!g_pCompositor)
         return {.success = false, .error = "compositor is not ready"};
 
     const auto parts = splitCsv(args);
     if (parts.empty())
-        return {.success = false, .error = "usage: hypr-agent-portal:session <begin|sync|end>[,<window-regex>]"};
+        return {.success = false, .error = "usage: brand:session <begin|sync|end>[,<window-regex>]"};
 
     const auto action = lower(parts[0]);
     if (action == "begin") {
@@ -2779,15 +2779,15 @@ SDispatchResult dispatchWorkspaceManage(const std::string& action, const std::ve
 // and the synchronous built-in dispatcher call in this compositor stack frame.
 SDispatchResult dispatchManage(const std::string& args) {
     if (g_agentPanicActive)
-        return {.success = false, .error = "hypr-agent-portal panic is active"};
+        return {.success = false, .error = "brand panic is active"};
     if (compositorSessionLocked())
-        return {.success = false, .error = "hypr-agent-portal management is blocked while the compositor session is locked"};
+        return {.success = false, .error = "brand management is blocked while the compositor session is locked"};
     if (args.find('"') != std::string::npos || args.find('\\') != std::string::npos)
         return {.success = false, .error = "manage payload quoting and escaping are not supported"};
 
     const auto parts = splitCsv(args);
     if (parts.size() < 2)
-        return {.success = false, .error = "usage: hypr-agent-portal:manage ACTION,QUALIFIED_ADDRESS[,ARG...]"};
+        return {.success = false, .error = "usage: brand:manage ACTION,QUALIFIED_ADDRESS[,ARG...]"};
 
     const auto action = lower(parts[0]);
     static constexpr std::array<std::string_view, 7> WORKSPACE_ACTIONS = {
@@ -2895,8 +2895,8 @@ SDispatchResult dispatchPanic(const std::string& args) {
         return {.success = true};
     }
     if (action == "status")
-        return g_agentPanicActive ? SDispatchResult{.success = false, .error = "hypr-agent-portal panic is active"} : SDispatchResult{.success = true};
-    return {.success = false, .error = "usage: hypr-agent-portal:panic [panic|cancel|resume|status]"};
+        return g_agentPanicActive ? SDispatchResult{.success = false, .error = "brand panic is active"} : SDispatchResult{.success = true};
+    return {.success = false, .error = "usage: brand:panic [panic|cancel|resume|status]"};
 }
 
 SDispatchResult dispatchApproval(const std::string& args) {
@@ -2916,7 +2916,7 @@ SDispatchResult dispatchApproval(const std::string& args) {
     if (action == "arm") {
         stream >> ttlText >> extra;
         if (ttlText.empty() || !extra.empty())
-            return {.success = false, .error = "usage: hypr-agent-portal:approval arm CHALLENGE_ID TTL_MS"};
+            return {.success = false, .error = "usage: brand:approval arm CHALLENGE_ID TTL_MS"};
 
         int64_t ttlMs = 0;
         const auto [end, error] = std::from_chars(ttlText.data(), ttlText.data() + ttlText.size(), ttlMs);
@@ -2942,7 +2942,7 @@ SDispatchResult dispatchApproval(const std::string& args) {
     if (action == "status") {
         stream >> extra;
         if (!extra.empty())
-            return {.success = false, .error = "usage: hypr-agent-portal:approval status CHALLENGE_ID"};
+            return {.success = false, .error = "usage: brand:approval status CHALLENGE_ID"};
         if (!g_physicalApprovalChallenge)
             return {.success = false, .error = "approval-expired-or-not-armed"};
         if (g_physicalApprovalChallenge->id != challengeId)
@@ -2955,13 +2955,13 @@ SDispatchResult dispatchApproval(const std::string& args) {
     if (action == "cancel") {
         stream >> extra;
         if (!extra.empty())
-            return {.success = false, .error = "usage: hypr-agent-portal:approval cancel CHALLENGE_ID"};
+            return {.success = false, .error = "usage: brand:approval cancel CHALLENGE_ID"};
         if (g_physicalApprovalChallenge && g_physicalApprovalChallenge->id == challengeId)
             g_physicalApprovalChallenge.reset();
         return {.success = true};
     }
 
-    return {.success = false, .error = "usage: hypr-agent-portal:approval [arm CHALLENGE_ID TTL_MS|status CHALLENGE_ID|cancel CHALLENGE_ID]"};
+    return {.success = false, .error = "usage: brand:approval [arm CHALLENGE_ID TTL_MS|status CHALLENGE_ID|cancel CHALLENGE_ID]"};
 }
 
 SDispatchResult dispatchGuard(const std::string& args) {
@@ -2976,7 +2976,7 @@ SDispatchResult dispatchGuard(const std::string& args) {
     else if (action == "keyboard-grab")
         active = keyboardGrabActive();
     else
-        return {.success = false, .error = "usage: hypr-agent-portal:guard [panic|locked|exclusive-layer|keyboard-grab]"};
+        return {.success = false, .error = "usage: brand:guard [panic|locked|exclusive-layer|keyboard-grab]"};
 
     if (active)
         return {.success = false, .error = "guard-active:" + action};
@@ -3010,7 +3010,7 @@ SDispatchResult dispatchLuaPayload(eLuaDispatcher dispatcher, const std::string&
         case eLuaDispatcher::APPROVAL: return dispatchApproval(payload);
     }
 
-    return {.success = false, .error = "unknown hypr-agent-portal lua dispatcher"};
+    return {.success = false, .error = "unknown brand lua dispatcher"};
 }
 
 int pushLuaDispatchResult(lua_State* L, const SDispatchResult& result) {
@@ -3113,26 +3113,26 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     registerPluginConfig();
     registerLuaDispatchers();
 
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:pointer", dispatchPointer);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:pointer-relative", dispatchPointerRelative);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:indicator", dispatchIndicator);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:keyboard", dispatchKeyboard);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:screenshot", dispatchScreenshot);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:session", dispatchSession);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:manage", dispatchManage);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:panic", dispatchPanic);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:guard", dispatchGuard);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-portal:approval", dispatchApproval);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:pointer", dispatchPointer);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:pointer-relative", dispatchPointerRelative);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:indicator", dispatchIndicator);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:keyboard", dispatchKeyboard);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:screenshot", dispatchScreenshot);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:session", dispatchSession);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:manage", dispatchManage);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:panic", dispatchPanic);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:guard", dispatchGuard);
-    HyprlandAPI::addDispatcherV2(g_pluginHandle, "hypr-agent-protal:approval", dispatchApproval);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:pointer", dispatchPointer);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:pointer-relative", dispatchPointerRelative);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:indicator", dispatchIndicator);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:keyboard", dispatchKeyboard);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:screenshot", dispatchScreenshot);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:session", dispatchSession);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:manage", dispatchManage);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:panic", dispatchPanic);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:guard", dispatchGuard);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:approval", dispatchApproval);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:pointer", dispatchPointer);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:pointer-relative", dispatchPointerRelative);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:indicator", dispatchIndicator);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:keyboard", dispatchKeyboard);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:screenshot", dispatchScreenshot);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:session", dispatchSession);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:manage", dispatchManage);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:panic", dispatchPanic);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:guard", dispatchGuard);
+    HyprlandAPI::addDispatcherV2(g_pluginHandle, "brand:approval", dispatchApproval);
     g_windowOpenEarlyListener = Event::bus()->m_events.window.openEarly.listen([](PHLWINDOW window) { handleWorkspaceSessionWindowOpenEarly(window); });
     g_windowOpenListener = Event::bus()->m_events.window.open.listen([](PHLWINDOW window) { handleWorkspaceSessionWindowOpen(window); });
     g_renderStageListener = Event::bus()->m_events.render.stage.listen([](eRenderStage stage) { renderAgentIndicator(stage); });
@@ -3150,7 +3150,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::reloadConfig();
 
     return {
-        .name = "hypr-agent-portal",
+        .name = "brand",
         .description = "Background screenshot, pointer, keyboard, workspace guard, and backend-independent visible agent cursor primitives for Hyprland agents",
         .author = "wilf",
         .version = "0.4.0",

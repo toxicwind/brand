@@ -12,8 +12,8 @@ from target_identity import parse_target, qualify_address, strip_target_qualifie
 
 
 def load_ctl():
-    path = ROOT / "scripts" / "hypr-agent-portalctl"
-    loader = importlib.machinery.SourceFileLoader("hypr_agent_portalctl_identity", str(path))
+    path = ROOT / "scripts" / "brandctl"
+    loader = importlib.machinery.SourceFileLoader("brandctl_identity", str(path))
     spec = importlib.util.spec_from_loader(loader.name, loader)
     module = importlib.util.module_from_spec(spec)
     loader.exec_module(module)
@@ -21,8 +21,8 @@ def load_ctl():
 
 
 def load_mcp():
-    path = ROOT / "mcp" / "hypr-agent-portal-mcp.py"
-    spec = importlib.util.spec_from_file_location("hypr_agent_portal_mcp_identity", path)
+    path = ROOT / "mcp" / "brand-mcp.py"
+    spec = importlib.util.spec_from_file_location("brand_mcp_identity", path)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)

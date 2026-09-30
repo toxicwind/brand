@@ -13,7 +13,7 @@ from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNNER = ROOT / "scripts" / "hypr-agent-portal-sandbox"
+RUNNER = ROOT / "scripts" / "brand-sandbox"
 
 
 class SandboxRunnerTests(unittest.TestCase):
@@ -31,7 +31,7 @@ class SandboxRunnerTests(unittest.TestCase):
     def write_managed_layout(self, session: Path, status: str) -> None:
         for name in ("home", "config", "cache", "state", "data", "logs"):
             (session / name).mkdir(mode=0o700, exist_ok=True)
-        lock = session / ".hypr-agent-portal-sandbox.lock"
+        lock = session / ".brand-sandbox.lock"
         lock.write_text("", encoding="utf-8")
         lock.chmod(0o600)
         marker = {
@@ -43,7 +43,7 @@ class SandboxRunnerTests(unittest.TestCase):
             "status": status,
             "updatedAt": 0,
         }
-        marker_path = session / ".hypr-agent-portal-sandbox.json"
+        marker_path = session / ".brand-sandbox.json"
         marker_path.write_text(json.dumps(marker), encoding="utf-8")
         marker_path.chmod(0o600)
 
@@ -140,7 +140,7 @@ class SandboxRunnerTests(unittest.TestCase):
                 "rootKind": "explicit",
                 "status": "stopped",
             }
-            marker_path = session / ".hypr-agent-portal-sandbox.json"
+            marker_path = session / ".brand-sandbox.json"
             marker_path.write_text(json.dumps(marker), encoding="utf-8")
             marker_path.chmod(0o600)
             sentinel = session / "sentinel"
@@ -177,11 +177,11 @@ class SandboxRunnerTests(unittest.TestCase):
                 path,
                 {
                     "HOME": "/tmp/example-home",
-                    "HYPR_AGENT_PORTAL_SANDBOX_ID": "cleanup-marker",
+                    "BRAND_SANDBOX_ID": "cleanup-marker",
                 },
             )
             text = path.read_text(encoding="utf-8")
-            self.assertIn("HYPR_AGENT_PORTAL_SANDBOX_ID=cleanup-marker", text)
+            self.assertIn("BRAND_SANDBOX_ID=cleanup-marker", text)
 
     def test_nested_mounts_are_refused_before_cleanup(self) -> None:
         namespace = runpy.run_path(str(RUNNER), run_name="sandbox_runner_module")
@@ -201,7 +201,7 @@ class SandboxRunnerTests(unittest.TestCase):
         namespace = runpy.run_path(str(RUNNER), run_name="sandbox_runner_module")
         marker = "sandbox-test-marker"
         env = dict(os.environ)
-        env["HYPR_AGENT_PORTAL_SANDBOX_ID"] = marker
+        env["BRAND_SANDBOX_ID"] = marker
         leader = subprocess.Popen(
             [
                 sys.executable,

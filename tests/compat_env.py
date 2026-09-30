@@ -20,23 +20,23 @@ SPEC.loader.exec_module(compat_env)
 class CompatEnvironmentTests(unittest.TestCase):
     def test_canonical_value_wins(self) -> None:
         env = {
-            "HYPR_AGENT_PORTAL_CTL": "/new/ctl",
+            "BRAND_CTL": "/new/ctl",
             "HYPR_AGENT_PROTAL_CTL": "/old/ctl",
         }
-        self.assertEqual(compat_env.getenv("HYPR_AGENT_PORTAL_CTL", environ=env), "/new/ctl")
+        self.assertEqual(compat_env.getenv("BRAND_CTL", environ=env), "/new/ctl")
         self.assertEqual(compat_env.promote_legacy_environment(env), ())
-        self.assertEqual(env["HYPR_AGENT_PORTAL_CTL"], "/new/ctl")
+        self.assertEqual(env["BRAND_CTL"], "/new/ctl")
 
     def test_legacy_value_is_promoted_without_mutating_unrelated_keys(self) -> None:
         env = {"HYPR_AGENT_PROTAL_MODEL_RESOLUTION": "full", "OTHER": "kept"}
         uses = compat_env.promote_legacy_environment(env)
-        self.assertEqual(env["HYPR_AGENT_PORTAL_MODEL_RESOLUTION"], "full")
+        self.assertEqual(env["BRAND_MODEL_RESOLUTION"], "full")
         self.assertEqual(env["OTHER"], "kept")
         self.assertEqual(
             uses,
             (
                 compat_env.LegacyEnvironmentUse(
-                    "HYPR_AGENT_PORTAL_MODEL_RESOLUTION",
+                    "BRAND_MODEL_RESOLUTION",
                     "HYPR_AGENT_PROTAL_MODEL_RESOLUTION",
                 ),
             ),
@@ -45,7 +45,7 @@ class CompatEnvironmentTests(unittest.TestCase):
     def test_unknown_legacy_variable_is_not_promoted(self) -> None:
         env = {"HYPR_AGENT_PROTAL_UNKNOWN": "unsafe"}
         self.assertEqual(compat_env.promote_legacy_environment(env), ())
-        self.assertNotIn("HYPR_AGENT_PORTAL_UNKNOWN", env)
+        self.assertNotIn("BRAND_UNKNOWN", env)
 
     def test_config_file_prefers_current_then_legacy(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -65,7 +65,7 @@ class CompatEnvironmentTests(unittest.TestCase):
                 compat_env.existing_config_file("cursor.abgr", environ={"XDG_CONFIG_HOME": directory}),
                 current,
             )
-            self.assertEqual(current.parent, base / "hypr-agent-portal")
+            self.assertEqual(current.parent, base / "brand")
 
     def test_rejects_config_directory_escape(self) -> None:
         with self.assertRaises(ValueError):
@@ -74,11 +74,11 @@ class CompatEnvironmentTests(unittest.TestCase):
     def test_config_namespaces_are_ordered(self) -> None:
         self.assertEqual(
             compat_env.config_namespace_candidates(lua=True),
-            ("plugin.hypr_agent_portal", "plugin.hypr_agent_protal"),
+            ("plugin.brand", "plugin.hypr_agent_protal"),
         )
         self.assertEqual(
             compat_env.config_namespace_candidates(lua=False),
-            ("plugin:hypr-agent-portal", "plugin:hypr-agent-protal"),
+            ("plugin:brand", "plugin:brand"),
         )
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Optional-Pillow screenshot transformations for hypr-agent-portal.
+"""Optional-Pillow screenshot transformations for brand.
 
 The module deliberately has no dependency on the MCP server.  Callers pass an
 already privacy-filtered screenshot and its geometry, and receive newly encoded
